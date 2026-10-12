@@ -210,8 +210,8 @@
 
   function updateUI() {
     try {
-      document.getElementById("day-badge").innerText = `第 ${state.day} 天`;
-      document.getElementById("story-title").innerText = `第 ${state.day} 天`;
+      document.getElementById("day-badge").innerText = "第 " + state.day + " 天";
+      document.getElementById("story-title").innerText = "第 " + state.day + " 天";
 
       let totalUnread = 0;
       for (let k in state.contacts) { totalUnread += state.contacts[k].unread; }
@@ -227,14 +227,14 @@
 
       let taskEl = document.getElementById("day-task-status");
       if (taskEl) {
-        let billStatus = state.currentBill.paid ? "✅ 今日帳單已繳納" : `⏳ 待繳: ${state.currentBill.name} (NT$ ${state.currentBill.amount.toLocaleString()})`;
-        let loanClearStatus = state.loans.length === 0 ? "✅ 無高利貸負債" : `⚠️ 尚有高利貸未清償 (${state.loans.length}筆)`;
+        let billStatus = state.currentBill.paid ? "✅ 今日帳單已繳納" : "⏳ 待繳: " + state.currentBill.name + " (NT$ " + state.currentBill.amount.toLocaleString() + ")";
+        let loanClearStatus = state.loans.length === 0 ? "✅ 無高利貸負債" : "⚠️ 尚有高利貸未清償 (" + state.loans.length + "筆)";
 
         if (state.day === 1 || !state.casinoInstalled) {
-          taskEl.innerText = `📌 待辦事項：處理今日帳單開銷。| ${loanClearStatus}`;
+          taskEl.innerText = "📌 待辦事項：處理今日帳單開銷。| " + loanClearStatus;
         } else {
           let spinsLeft = Math.max(0, 10 - state.spinsToday);
-          taskEl.innerText = `📌 待轉輪盤目標10次,已打${state.spinsToday}次(剩餘${spinsLeft}次) | ${billStatus} | ${loanClearStatus}`;
+          taskEl.innerText = "📌 待轉輪盤目標10次,已打" + state.spinsToday + "次(剩餘" + spinsLeft + "次) | " + billStatus + " | " + loanClearStatus;
         }
       }
     } catch(e) {
@@ -248,19 +248,18 @@
     if (!screen) return;
     let notif = document.createElement("div");
     notif.className = "ios-notification";
-    notif.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#00b900; margin-bottom:2px;">
-        <span>Line 訊息</span><span>現在</span>
-      </div>
-      <div style="font-weight:bold; font-size:13px; color:#fff;">${senderName}</div>
-      <div style="font-size:12px; color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${text}</div>
-    `;
-    notif.onclick = () => {
+    notif.innerHTML = 
+      '<div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#00b900; margin-bottom:2px;">' +
+      '<span>Line 訊息</span><span>現在</span></div>' +
+      '<div style="font-weight:bold; font-size:13px; color:#fff;">' + senderName + '</div>' +
+      '<div style="font-size:12px; color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + text + '</div>';
+    
+    notif.onclick = function() {
       notif.remove();
       openChat(contactKey);
     };
     screen.appendChild(notif);
-    setTimeout(() => { if (notif.parentNode) notif.remove(); }, 4000);
+    setTimeout(function() { if (notif.parentNode) notif.remove(); }, 4000);
   }
 
   function openApp(appId) {
@@ -273,102 +272,94 @@
     view.id = "active-app-view";
     view.className = "app-view";
     
-    let html = `<div class="app-nav-bar">
-      <span style="font-weight:600; font-size:15px;">${getAppTitle(appId)}</span>
-      <span onclick="closeApp()" style="color:#00b900; cursor:pointer; font-weight:600;">關閉</span>
-    </div><div class="app-body">`;
+    let html = '<div class="app-nav-bar">' +
+      '<span style="font-weight:600; font-size:15px;">' + getAppTitle(appId) + '</span>' +
+      '<span onclick="closeApp()" style="color:#00b900; cursor:pointer; font-weight:600;">關閉</span>' +
+      '</div><div class="app-body">';
 
     if (appId === 'futurePay') {
-      html += `
-        <div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">
-          <div style="font-size:11px; color:#aaa;">未來支付 - 當前可用現金餘額</div>
-          <div style="font-size:24px; font-weight:bold; color:${state.cash<0?'#ff3b30':'#34c759'}; margin-top:2px;">NT$ ${state.cash.toLocaleString()}</div>
-        </div>
-      `;
+      let cashColor = state.cash < 0 ? '#ff3b30' : '#34c759';
+      html += '<div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">' +
+        '<div style="font-size:11px; color:#aaa;">未來支付 - 當前可用現金餘額</div>' +
+        '<div style="font-size:24px; font-weight:bold; color:' + cashColor + '; margin-top:2px;">NT$ ' + state.cash.toLocaleString() + '</div></div>';
 
       if (state.loans.length > 0) {
-        html += `<div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">
-          <div style="font-size:13px; font-weight:bold; color:#ff3b30; margin-bottom:8px;">⚠️ 地下高利貸欠款明細（必須全數還清才能進下一天）</div>`;
-        state.loans.forEach((l, idx) => {
-          html += `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #222;">
-              <div>
-                <div style="font-size:12px; font-weight:bold;">${l.name}</div>
-                <div style="font-size:10px; color:#ff9500;">本利和應還: NT$ ${l.amount.toLocaleString()}</div>
-              </div>
-              <button class="ios-btn success" style="width:auto; padding:6px 12px; font-size:11px; margin:0;" onclick="repayLoan(${idx})">還款</button>
-            </div>
-          `;
-        });
-        html += `</div>`;
+        html += '<div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">' +
+          '<div style="font-size:13px; font-weight:bold; color:#ff3b30; margin-bottom:8px;">⚠️ 地下高利貸欠款明細（必須全數還清才能進下一天）</div>';
+        for (let i = 0; i < state.loans.length; i++) {
+          let l = state.loans[i];
+          html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #222;">' +
+            '<div><div style="font-size:12px; font-weight:bold;">' + l.name + '</div>' +
+            '<div style="font-size:10px; color:#ff9500;">本利和應還: NT$ ' + l.amount.toLocaleString() + '</div></div>' +
+            '<button class="ios-btn success" style="width:auto; padding:6px 12px; font-size:11px; margin:0;" onclick="repayLoan(' + i + ')">還款</button>' +
+            '</div>';
+        }
+        html += '</div>';
       }
 
-      html += `
-        <div style="background:#1c1c1e; padding:14px; border-radius:14px; border:1px solid #333;">
-          <div style="font-size:13px; font-weight:bold; margin-bottom:6px;">💳 今日必須繳納項目</div>
-          ${!state.currentBill.paid ? `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
-              <div><div style="font-size:12px;">${state.currentBill.name}</div><div style="font-size:10px; color:#aaa;">金額: NT$ ${state.currentBill.amount.toLocaleString()}</div></div>
-              <button class="ios-btn danger" style="width:auto; padding:6px 10px; font-size:11px; margin:0;" onclick="payBill()">手動繳納</button>
-            </div>
-          ` : '<div style="font-size:12px; color:#34c759;">✅ 今日生活開銷與帳單已全數繳清！</div>'}
-        </div>
-      `;
+      html += '<div style="background:#1c1c1e; padding:14px; border-radius:14px; border:1px solid #333;">' +
+        '<div style="font-size:13px; font-weight:bold; margin-bottom:6px;">💳 今日必須繳納項目</div>';
+      if (!state.currentBill.paid) {
+        html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">' +
+          '<div><div style="font-size:12px;">' + state.currentBill.name + '</div><div style="font-size:10px; color:#aaa;">金額: NT$ ' + state.currentBill.amount.toLocaleString() + '</div></div>' +
+          '<button class="ios-btn danger" style="width:auto; padding:6px 10px; font-size:11px; margin:0;" onclick="payBill()">手動繳納</button></div>';
+      } else {
+        html += '<div style="font-size:12px; color:#34c759;">✅ 今日生活開銷與帳單已全數繳清！</div>';
+      }
+      html += '</div>';
+
     } else if (appId === 'messages') {
-      html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
+      html += '<div style="display:flex; flex-direction:column; gap:10px;">';
       for (let key in state.contacts) {
         let c = state.contacts[key];
         let lastMsg = c.messages[c.messages.length - 1].text;
-        html += `<div onclick="openChat('${key}')" style="background:#2c2c2e; padding:12px; border-radius:12px; display:flex; align-items:center; gap:12px; cursor:pointer;">
-          <div style="font-size:26px; background:#3a3a3c; width:44px; height:44px; border-radius:50%; display:flex; justify-content:center; align-items:center; position:relative;">
-            ${c.avatar}
-          </div>
-          <div style="flex:1; overflow:hidden;">
-            <div style="font-weight:600; font-size:14px; display:flex; justify-content:space-between;">
-              <span>${c.name}</span>
-              ${c.unread > 0 ? `<span style="font-size:10px; background:#00b900; color:#fff; padding:1px 6px; border-radius:10px;">未讀 ${c.unread}</span>` : ''}
-            </div>
-            <div style="font-size:12px; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lastMsg}</div>
-          </div>
-        </div>`;
+        let unreadBadge = c.unread > 0 ? '<span style="font-size:10px; background:#00b900; color:#fff; padding:1px 6px; border-radius:10px;">未讀 ' + c.unread + '</span>' : '';
+        html += '<div onclick="openChat(\'' + key + '\')" style="background:#2c2c2e; padding:12px; border-radius:12px; display:flex; align-items:center; gap:12px; cursor:pointer;">' +
+          '<div style="font-size:26px; background:#3a3a3c; width:44px; height:44px; border-radius:50%; display:flex; justify-content:center; align-items:center;">' + c.avatar + '</div>' +
+          '<div style="flex:1; overflow:hidden;">' +
+          '<div style="font-weight:600; font-size:14px; display:flex; justify-content:space-between;"><span>' + c.name + '</span>' + unreadBadge + '</div>' +
+          '<div style="font-size:12px; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + lastMsg + '</div>' +
+          '</div></div>';
       }
-      html += `</div>`;
+      html += '</div>';
+
     } else if (appId === 'casino') {
       let canHighStake = state.day >= 4; 
       let allInUnlocked = state.day >= 8; 
 
       if (!state.vipAlertShown) {
         state.vipAlertShown = true;
-        setTimeout(() => alert("🔔 提示：您目前只打 VIP 1，所以可以增加投注的金額！"), 300);
+        setTimeout(function() { alert("🔔 提示：您目前只打 VIP 1，所以可以增加投注的金額！"); }, 300);
       }
 
-      html += `
-        <div style="text-align:center;">
-          <div style="font-size:10px; color:#ff9500; margin-bottom:2px;">今日目標：轉輪盤</div>
-          <h2 style="color:#ff9500; margin-top:0; font-size:16px;">🎲 橘哥娛樂城</h2>
-          <p style="font-size:11px; color:#aaa; margin:4px 0;">即時餘額：<b id="casino-live-cash" style="color:#34c759;">NT$ ${state.cash.toLocaleString()}</b></p>
-          
-          <div class="slot-machine-box">
-            <div class="slot-reels-container">
-              <div class="slot-reel"><div class="slot-reel-inner" id="reel-1">🎰</div></div>
-              <div class="slot-reel"><div class="slot-reel-inner" id="reel-2">🎰</div></div>
-              <div class="slot-reel"><div class="slot-reel-inner" id="reel-3">🎰</div></div>
-            </div>
-            <div id="gamble-res" style="font-weight:bold; font-size:13px; min-height:18px; color:#ff9500;"></div>
-          </div>
+      html += '<div style="text-align:center;">' +
+        '<div style="font-size:10px; color:#ff9500; margin-bottom:2px;">今日目標：轉輪盤</div>' +
+        '<h2 style="color:#ff9500; margin-top:0; font-size:16px;">🎲 橘哥娛樂城</h2>' +
+        '<p style="font-size:11px; color:#aaa; margin:4px 0;">即時餘額：<b id="casino-live-cash" style="color:#34c759;">NT$ ' + state.cash.toLocaleString() + '</b></p>' +
+        '<div class="slot-machine-box"><div class="slot-reels-container">' +
+        '<div class="slot-reel"><div class="slot-reel-inner" id="reel-1">🎰</div></div>' +
+        '<div class="slot-reel"><div class="slot-reel-inner" id="reel-2">🎰</div></div>' +
+        '<div class="slot-reel"><div class="slot-reel-inner" id="reel-3">🎰</div></div>' +
+        '</div><div id="gamble-res" style="font-weight:bold; font-size:13px; min-height:18px; color:#ff9500;"></div></div>' +
+        '<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:8px;">' +
+        '<button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(1000)">下注 1,000</button>' +
+        '<button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(5000)">下注 5,000</button>';
 
-          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:8px;">
-            <button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(1000)">下注 1,000</button>
-            <button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(5000)">下注 5,000</button>
-            ${canHighStake ? `
-              <button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(10000)">下注 10,000</button>
-              <button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(50000)">下注 50,000</button>
-            ` : `<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:6px; border-radius:6px;">🔒 下注 1萬/5萬額度：需至第 4 天解鎖</div>`}
-          </div>
+      if (canHighStake) {
+        html += '<button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(10000)">下注 10,000</button>' +
+                '<button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(50000)">下注 50,000</button>';
+      } else {
+        html += '<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:6px; border-radius:6px;">🔒 下注 1萬/5萬額度：需至第 4 天解鎖</div>';
+      }
+      html += '</div>';
 
-          ${allInUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:14px; background:#ff2d55; padding:10px;">🔥 梭哈 (All-in)</button>` : `<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:8px; border-radius:8px; border:1px dashed #444;">🔒 梭哈鍵：需至第 8 天解鎖 (目前第 ${state.day} 天)</div>`}
-        </div>
-      `;
+      if (allInUnlocked) {
+        html += '<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:14px; background:#ff2d55; padding:10px;">🔥 梭哈 (All-in)</button>';
+      } else {
+        html += '<div style="font-size:10px; color:#aaa; background:#222; padding:8px; border-radius:8px; border:1px dashed #444;">🔒 梭哈鍵：需至第 8 天解鎖 (目前第 ' + state.day + ' 天)</div>';
+      }
+      html += '</div>';
+
     } else if (appId === 'loan') {
       let baseAmount = 50000 + (state.day * 25000);
       let baseRate = 0.20 + ((state.day - 1) * 0.15);
@@ -383,34 +374,32 @@
         platforms.push({ name: "鴻海極速融資", amount: Math.floor(baseAmount * 2.5), rate: baseRate + 0.30 });
       }
 
-      html += `<p style="font-size:11px; color:#aaa; margin-top:0;">地下融資平台（每日更新：額度更高、利息更驚人）：</p>`;
+      html += '<p style="font-size:11px; color:#aaa; margin-top:0;">地下融資平台（每日更新：額度更高、利息更驚人）：</p>';
       
-      platforms.forEach(p => {
+      for (let i = 0; i < platforms.length; i++) {
+        let p = platforms[i];
         let isBorrowed = state.borrowedPlatforms.includes(p.name);
-        html += `
-          <div style="background:#2c2c2e; padding:10px; border-radius:10px; margin-bottom:8px; opacity:${isBorrowed?0.5:1};">
-            <b>${p.name} (利率 ${Math.round(p.rate * 100)}%)</b>
-            <div style="font-size:10px; color:#aaa; margin:2px 0;">可貸金額 NT$ ${p.amount.toLocaleString()}</div>
-            <button class="ios-btn ${isBorrowed?'':'success'}" style="padding:6px; font-size:12px; margin:0;" ${isBorrowed?'disabled':''} onclick="requestLoan('${p.name}', ${p.amount}, ${p.rate})">
-              ${isBorrowed ? '已借過（不得重複）' : '立即申貸'}
-            </button>
-          </div>
-        `;
-      });
+        let btnClass = isBorrowed ? 'ios-btn' : 'ios-btn success';
+        let btnText = isBorrowed ? '已借過（不得重複）' : '立即申貸';
+        let disabledAttr = isBorrowed ? 'disabled' : '';
+
+        html += '<div style="background:#2c2c2e; padding:10px; border-radius:10px; margin-bottom:8px; opacity:' + (isBorrowed ? 0.5 : 1) + ';">' +
+          '<b>' + p.name + ' (利率 ' + Math.round(p.rate * 100) + '%)</b>' +
+          '<div style="font-size:10px; color:#aaa; margin:2px 0;">可貸金額 NT$ ' + p.amount.toLocaleString() + '</div>' +
+          '<button class="' + btnClass + '" style="padding:6px; font-size:12px; margin:0;" ' + disabledAttr + ' onclick="requestLoan(\'' + p.name + '\', ' + p.amount + ', ' + p.rate + ')">' + btnText + '</button>' +
+          '</div>';
+      }
+
     } else if (appId === 'ig') {
-      html += `
-        <div style="background:#1a1a1a; border-radius:12px; padding:10px; border:1px solid #333;">
-          <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:bold; margin-bottom:8px;">
-            <div style="width:28px; height:28px; border-radius:50%; background:#ff9500; display:flex; justify-content:center; align-items:center;">👑</div>
-            <span>橘哥官方社群 @boss_orange</span>
-          </div>
-          <div style="height:120px; background:#333; border-radius:8px; display:flex; justify-content:center; align-items:center; font-size:32px;">🏎️💸</div>
-          <p style="font-size:11px; color:#ddd; margin-top:8px;">跟著橘哥團隊買，不到三天把車貸房貸全清光！想翻身立刻私訊我！🔥</p>
-        </div>
-      `;
+      html += '<div style="background:#1a1a1a; border-radius:12px; padding:10px; border:1px solid #333;">' +
+        '<div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:bold; margin-bottom:8px;">' +
+        '<div style="width:28px; height:28px; border-radius:50%; background:#ff9500; display:flex; justify-content:center; align-items:center;">👑</div>' +
+        '<span>橘哥官方社群 @boss_orange</span></div>' +
+        '<div style="height:120px; background:#333; border-radius:8px; display:flex; justify-content:center; align-items:center; font-size:32px;">🏎️💸</div>' +
+        '<p style="font-size:11px; color:#ddd; margin-top:8px;">跟著橘哥團隊買，不到三天把車貸房貸全清光！想翻身立刻私訊我！🔥</p></div>';
     }
 
-    html += `</div>`;
+    html += '</div>';
     view.innerHTML = html;
     screen.appendChild(view);
   }
@@ -435,31 +424,29 @@
     let view = document.createElement("div");
     view.className = "app-view";
     
-    let html = `
-      <div class="app-nav-bar">
-        <span style="font-weight:600; font-size:15px;">${c.avatar} ${c.name}</span>
-        <span onclick="this.closest('.app-view').remove()" style="color:#00b900; cursor:pointer; font-weight:600;">返回</span>
-      </div>
-      <div class="app-body" id="chat-box" style="display:flex; flex-direction:column; gap:8px;">
-    `;
-    c.messages.forEach(m => {
+    let html = '<div class="app-nav-bar">' +
+      '<span style="font-weight:600; font-size:15px;">' + c.avatar + ' ' + c.name + '</span>' +
+      '<span onclick="this.closest(\'.app-view\').remove()" style="color:#00b900; cursor:pointer; font-weight:600;">返回</span>' +
+      '</div><div class="app-body" id="chat-box" style="display:flex; flex-direction:column; gap:8px;">';
+
+    for (let i = 0; i < c.messages.length; i++) {
+      let m = c.messages[i];
       let type = m.sender === 'user' ? 'outgoing' : 'incoming';
-      html += `<div class="chat-bubble ${type}">
-        <div>${m.text}</div>
-        <div class="voice-msg-btn" onclick="playVoiceSynth('${m.voice || m.text}')">▶ 語音訊息 (點擊播放)</div>
-      </div>`;
+      html += '<div class="chat-bubble ' + type + '">' +
+        '<div>' + m.text + '</div>' +
+        '<div class="voice-msg-btn" onclick="playVoiceSynth(\'' + (m.voice || m.text) + '\')">▶ 語音訊息 (點擊播放)</div>' +
+        '</div>';
+
       if (m.isCasinoLink) {
-        html += `<div class="chat-bubble incoming link-box" onclick="installCasino()">
-          <b>🎰 點擊下載「橘哥娛樂城 App」</b><br><span style="font-size:11px; opacity:0.8;">阿偉發來的專屬邀請連結</span>
-        </div>`;
+        html += '<div class="chat-bubble incoming link-box" onclick="installCasino()">' +
+          '<b>🎰 點擊下載「橘哥娛樂城 App」</b><br><span style="font-size:11px; opacity:0.8;">阿偉發來的專屬邀請連結</span></div>';
       }
       if (m.isLoanLink) {
-        html += `<div class="chat-bubble incoming link-box" onclick="installLoan()">
-          <b>💰 點擊下載「借貸錢莊 App」</b><br><span style="font-size:11px; opacity:0.8;">阿偉推薦的快速借貸管道</span>
-        </div>`;
+        html += '<div class="chat-bubble incoming link-box" onclick="installLoan()">' +
+          '<b>💰 點擊下載「借貸錢莊 App」</b><br><span style="font-size:11px; opacity:0.8;">阿偉推薦的快速借貸管道</span></div>';
       }
-    });
-    html += `</div>`;
+    }
+    html += '</div>';
     view.innerHTML = html;
     screen.appendChild(view);
   }
@@ -471,13 +458,11 @@
       if (screen) {
         let errPopup = document.createElement("div");
         errPopup.className = "error-popup";
-        errPopup.innerHTML = `
-          <div style="font-size:36px; margin-bottom:8px;">❌</div>
-          <div style="font-size:16px; font-weight:bold; color:#ff3b30; margin-bottom:4px;">餘額不足！</div>
-          <div style="font-size:12px; color:#ddd;">帳戶現金不足以支付 ${state.currentBill.name}</div>
-        `;
+        errPopup.innerHTML = '<div style="font-size:36px; margin-bottom:8px;">❌</div>' +
+          '<div style="font-size:16px; font-weight:bold; color:#ff3b30; margin-bottom:4px;">餘額不足！</div>' +
+          '<div style="font-size:12px; color:#ddd;">帳戶現金不足以支付 ' + state.currentBill.name + '</div>';
         screen.appendChild(errPopup);
-        setTimeout(() => errPopup.remove(), 1800);
+        setTimeout(function() { errPopup.remove(); }, 1800);
       }
       return;
     }
@@ -489,13 +474,11 @@
     if (screen) {
       let popup = document.createElement("div");
       popup.className = "success-popup";
-      popup.innerHTML = `
-        <div style="font-size:36px; margin-bottom:8px;">🎉</div>
-        <div style="font-size:16px; font-weight:bold; color:#34c759; margin-bottom:4px;">支付成功！</div>
-        <div style="font-size:12px; color:#ddd;">已完成 ${state.currentBill.name}</div>
-      `;
+      popup.innerHTML = '<div style="font-size:36px; margin-bottom:8px;">🎉</div>' +
+        '<div style="font-size:16px; font-weight:bold; color:#34c759; margin-bottom:4px;">支付成功！</div>' +
+        '<div style="font-size:12px; color:#ddd;">已完成 ' + state.currentBill.name + '</div>';
       screen.appendChild(popup);
-      setTimeout(() => popup.remove(), 1600);
+      setTimeout(function() { popup.remove(); }, 1600);
     }
 
     closeApp();
@@ -507,14 +490,14 @@
     let loan = state.loans[index];
     if (state.cash < loan.amount) {
       playSound('error-pay');
-      alert(`【餘額不足】現金不足以償還 ${loan.name} 的本利和 NT$ ${loan.amount.toLocaleString()}！`);
+      alert("【餘額不足】現金不足以償還 " + loan.name + " 的本利和 NT$ " + loan.amount.toLocaleString() + "！");
       return;
     }
 
     state.cash -= loan.amount;
     state.loans.splice(index, 1);
     playSound('success-pay');
-    alert(`✅ 成功還清 ${loan.name}！已扣除 NT$ ${loan.amount.toLocaleString()}`);
+    alert("✅ 成功還清 " + loan.name + "！已扣除 NT$ " + loan.amount.toLocaleString());
 
     closeApp();
     openApp('futurePay');
@@ -559,7 +542,7 @@
     resEl.innerText = "旋轉中...";
     playSound('spin');
 
-    setTimeout(() => {
+    setTimeout(function() {
       let isWin = false;
       let winProbability = 0.72; 
 
@@ -584,30 +567,30 @@
         let win = Math.floor(amount * 1.5);
         state.cash += win;
         resEl.style.color = "#34c759";
-        resEl.innerText = `🎉 中大獎！贏得 NT$ ${win.toLocaleString()}`;
+        resEl.innerText = "🎉 中大獎！贏得 NT$ " + win.toLocaleString();
         playSound('win');
       } else {
         r1.innerText = "🍒"; r2.innerText = "💎"; r3.innerText = "7️⃣";
         state.cash -= amount;
         resEl.style.color = "#ff3b30";
-        resEl.innerText = `😢 未中獎，損失 NT$ ${amount.toLocaleString()}`;
+        resEl.innerText = "😢 未中獎，損失 NT$ " + amount.toLocaleString();
         playSound('lose');
         let frame = document.getElementById("phone-frame");
         if (frame) {
           frame.classList.add("shake");
-          setTimeout(() => frame.classList.remove("shake"), 400);
+          setTimeout(function() { frame.classList.remove("shake"); }, 400);
         }
       }
 
       state.spinsToday++;
       
       let liveCashEl = document.getElementById("casino-live-cash");
-      if (liveCashEl) liveCashEl.innerText = `NT$ ${state.cash.toLocaleString()}`;
+      if (liveCashEl) liveCashEl.innerText = "NT$ " + state.cash.toLocaleString();
       
       updateUI();
 
       if (state.cash < 10000 && !state.loanInstalled && state.casinoInstalled) {
-        setTimeout(() => {
+        setTimeout(function() {
           state.contacts.friend.unread++;
           state.contacts.friend.messages.push({
             sender: "friend",
@@ -634,26 +617,24 @@
 
     let modal = document.createElement("div");
     modal.className = "face-verify-modal";
-    modal.innerHTML = `
-      <div style="font-size:36px; margin-bottom:10px;">📸</div>
-      <h3 style="color:#fff; margin-bottom:6px;">面容身份審核</h3>
-      <p id="verify-text" style="font-size:13px; color:#ff9500; margin-bottom:20px;">請確認眼鏡是否有摘除，以進行人臉識別解鎖</p>
-      <button class="ios-btn success" id="snap-btn" onclick="startCameraSnap('${name}', ${amount}, ${rate})">點擊拍照按鈕</button>
-    `;
+    modal.innerHTML = '<div style="font-size:36px; margin-bottom:10px;">📸</div>' +
+      '<h3 style="color:#fff; margin-bottom:6px;">面容身份審核</h3>' +
+      '<p id="verify-text" style="font-size:13px; color:#ff9500; margin-bottom:20px;">請確認眼鏡是否有摘除，以進行人臉識別解鎖</p>' +
+      '<button class="ios-btn success" id="snap-btn" onclick="startCameraSnap(\'' + name + '\', ' + amount + ', ' + rate + ')">點擊拍照按鈕</button>';
     screen.appendChild(modal);
   }
 
   function startCameraSnap(name, amount, rate) {
     let textEl = document.getElementById("verify-text");
     let btnEl = document.getElementById("snap-btn");
-    btnEl.style.display = "none";
+    if (btnEl) btnEl.style.display = "none";
 
     let count = 3;
     textEl.style.fontSize = "24px";
     textEl.style.color = "#00ffcc";
     textEl.innerText = count;
 
-    let timer = setInterval(() => {
+    let timer = setInterval(function() {
       count--;
       if (count > 0) {
         textEl.innerText = count;
@@ -662,12 +643,12 @@
         textEl.innerText = "✅ 核准完成！";
         playSound('win');
 
-        setTimeout(() => {
+        setTimeout(function() {
           let modal = document.querySelector(".face-verify-modal");
           if (modal) modal.remove();
 
           let totalRepay = Math.floor(amount * (1 + rate));
-          alert(`✅ 審核通過！「${name}」已撥款 NT$ ${amount.toLocaleString()}。注意：本利和共 NT$ ${totalRepay.toLocaleString()} 必須於隔天還清！`);
+          alert("✅ 審核通過！「" + name + "」已撥款 NT$ " + amount.toLocaleString() + "。注意：本利和共 NT$ " + totalRepay.toLocaleString() + " 必須於隔天還清！");
           
           state.loans.push({ name: name, amount: totalRepay, rate: rate });
           state.borrowedPlatforms.push(name);
@@ -675,12 +656,12 @@
 
           let collectorKey = "collector_" + Date.now();
           state.contacts[collectorKey] = {
-            name: `${name} 催收專員`,
+            name: name + " 催收專員",
             avatar: "⚠️",
             unread: 1,
-            messages: [{ sender: collectorKey, text: `【撥款成功通知】您已向本公司借款，本利和共 NT$ ${totalRepay.toLocaleString()}，明天到期必須全數清償，否則後果自負！`, voice: `您已向本公司借款，明天到期必須全數清償，否則後果自負！` }]
+            messages: [{ sender: collectorKey, text: "【撥款成功通知】您已向本公司借款，本利和共 NT$ " + totalRepay.toLocaleString() + "，明天到期必須全數清償，否則後果自負！", voice: "您已向本公司借款，明天到期必須全數清償，否則後果自負！" }]
           };
-          triggerNotification(`${name} 催收專員`, `本利和 NT$ ${totalRepay.toLocaleString()}，明天到期必須清償！`, collectorKey);
+          triggerNotification(name + " 催收專員", "本利和 NT$ " + totalRepay.toLocaleString() + "，明天到期必須清償！", collectorKey);
 
           closeApp();
           updateUI();
@@ -693,17 +674,17 @@
     if (state.casinoInstalled && state.spinsToday < 10) {
       playSound('error');
       let spinsLeft = Math.max(0, 10 - state.spinsToday);
-      alert(`【今日任務未完成】轉輪盤十次尚未完成！(還需轉 ${spinsLeft} 次)`);
+      alert("【今日任務未完成】轉輪盤十次尚未完成！(還需轉 " + spinsLeft + " 次)");
       return;
     }
     if (!state.currentBill.paid) {
       playSound('error');
-      alert(`【財務未完成】今天必須在「未來支付」繳納「${state.currentBill.name}」NT$ ${state.currentBill.amount.toLocaleString()}！`);
+      alert("【財務未完成】今天必須在「未來支付」繳納「" + state.currentBill.name + "」NT$ " + state.currentBill.amount.toLocaleString() + "！");
       return;
     }
     if (state.loans.length > 0) {
       playSound('error');
-      alert(`【強制還款警告】您目前身上還有未清償的高利貸欠款！必須至「未來支付」將所有貸款「還款」完畢後，才能晉級下一天！`);
+      alert("【強制還款警告】您目前身上還有未清償的高利貸欠款！必須至「未來支付」將所有貸款「還款」完畢後，才能晉級下一天！");
       return;
     }
 
@@ -711,16 +692,16 @@
     if (screen) {
       let overlay = document.createElement("div");
       overlay.className = "day-transition-overlay";
-      overlay.innerHTML = `<h1 style="font-size:28px; color:#fff; font-weight:300;">第 ${state.day + 1} 天</h1>`;
+      overlay.innerHTML = '<h1 style="font-size:28px; color:#fff; font-weight:300;">第 ' + (state.day + 1) + ' 天</h1>';
       screen.appendChild(overlay);
-      setTimeout(() => overlay.remove(), 1800);
+      setTimeout(function() { overlay.remove(); }, 1800);
     }
 
     state.day++;
     state.spinsToday = 0;
 
     if (state.day === 8) {
-      setTimeout(() => alert("🎉 恭喜您達成 VIP 4！已為您開啟『梭哈 (All-in)』功能鍵！"), 2000);
+      setTimeout(function() { alert("🎉 恭喜您達成 VIP 4！已為您開啟『梭哈 (All-in)』功能鍵！"); }, 2000);
     }
 
     if (state.day === 10) {
