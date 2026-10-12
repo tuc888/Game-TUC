@@ -50,7 +50,7 @@
     .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin: 6px 0; font-size: 13px; line-height: 1.4; word-break: break-all; }
     .chat-bubble.incoming { background: #262628; color: #fff; align-self: flex-start; }
     .chat-bubble.outgoing { background: #00b900; color: #fff; align-self: flex-end; }
-    .chat-bubble.link-box { background: #1e3a5f; border: 1px solid #007aff; cursor: pointer; }
+    .chat-bubble.link-box { background: #1c2a38; border: 2px solid #ff9500; cursor: pointer; padding: 8px; text-align: center; }
     .voice-msg-btn { display: inline-block; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 12px; cursor: pointer; margin-top: 6px; font-size: 11px; color: #00ffcc; }
 
     .shake { animation: shakeAnim 0.4s ease-in-out; }
@@ -451,18 +451,22 @@
     c.messages.forEach(m => {
       let b = document.createElement("div");
       b.className = "chat-bubble " + (m.sender === 'user' ? 'outgoing' : 'incoming');
-      b.innerHTML = '<div>' + m.text + '</div>';
-
-      let voiceBtn = document.createElement("div");
-      voiceBtn.className = "voice-msg-btn";
-      voiceBtn.innerText = "▶ 播放語音";
-      voiceBtn.onclick = () => playVoice(m.text);
-      b.appendChild(voiceBtn);
-
+      
       if (m.isCasinoLink) {
         b.className += " link-box";
-        b.onclick = () => { playSound('click'); installCasino(); };
+        b.innerHTML = '<div style="font-size:32px; margin-bottom:4px;">🎰</div>' +
+                      '<div style="font-weight:bold; color:#00ffcc;">【橘哥娛樂城 App 安裝檔】</div>' +
+                      '<div style="font-size:11px; color:#aaa; margin-top:2px;">點擊此圖片卡片以安裝應用程式</div>';
+        b.onclick = () => { playSound('click'); promptInstallCasino(); };
+      } else {
+        b.innerHTML = '<div>' + m.text + '</div>';
+        let voiceBtn = document.createElement("div");
+        voiceBtn.className = "voice-msg-btn";
+        voiceBtn.innerText = "▶ 播放語音";
+        voiceBtn.onclick = () => playVoice(m.text);
+        b.appendChild(voiceBtn);
       }
+
       if (m.isLoanLink) {
         b.className += " link-box";
         b.onclick = () => { playSound('click'); installLoan(); };
@@ -472,6 +476,17 @@
 
     view.appendChild(body);
     screen.appendChild(view);
+  }
+
+  function promptInstallCasino() {
+    if (state.casinoInstalled) {
+      alert("📲 「橘哥娛樂城 App」已經安裝過了！");
+      return;
+    }
+    let confirmInstall = confirm("📥 是否要安裝「橘哥娛樂城 App」？");
+    if (confirmInstall) {
+      installCasino();
+    }
   }
 
   function payBill() {
@@ -537,7 +552,7 @@
 
   function installCasino() {
     if (state.casinoInstalled) return;
-    alert("📲 「橘哥娛樂城 App」安裝完成！");
+    alert("📲 「橘哥娛樂城 App」安裝完成！已新增至桌面。");
     state.casinoInstalled = true;
     document.getElementById("casino-app-icon").style.display = "flex";
     closeApp();
@@ -685,6 +700,11 @@
   }
 
   function nextDay() {
+    if (state.day === 2 && !state.casinoInstalled) {
+      playSound('error-pay');
+      alert("【強制規定】第二天必須點擊阿偉傳來的娛樂城安裝檔並安裝「橘哥娛樂城」！");
+      return;
+    }
     if (state.casinoInstalled && state.spinsToday < 10) {
       playSound('error-pay');
       alert("【任務未完成】轉輪盤尚未達到 10 次！");
@@ -710,10 +730,10 @@
       state.contacts.friend.unread++;
       state.contacts.friend.messages.push({
         sender: "friend",
-        text: "欸兄弟！我最近在『橘哥娛樂城』爽賺翻了！點下方連結立刻試試！",
+        text: "欸兄弟！我最近在『橘哥娛樂城』爽賺翻了！點下方圖片安裝試試！",
         isCasinoLink: true
       });
-      triggerNotification("好友阿偉", "我在『橘哥娛樂城』爽賺翻了！點擊查看...", "friend");
+      triggerNotification("好友阿偉", "我在『橘哥娛樂城』爽賺翻了！點擊下方安裝檔...", "friend");
     }
 
     if (state.day === 10) {
