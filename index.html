@@ -20,9 +20,17 @@
     .app-label { font-size: 11px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
     .badge { position: absolute; top: -2px; right: 8px; background: #ff3b30; color: white; border-radius: 10px; font-size: 10px; padding: 2px 6px; font-weight: bold; display: none; }
     
-    .ios-notification { position: absolute; top: 50px; left: 12px; right: 12px; background: rgba(30,30,30,0.95); backdrop-filter: blur(20px); border-radius: 16px; padding: 12px 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid rgba(0,255,100,0.3); z-index: 200; cursor: pointer; }
+    .ios-notification { position: absolute; top: 50px; left: 12px; right: 12px; background: rgba(30,30,30,0.95); backdrop-filter: blur(20px); border-radius: 16px; padding: 12px 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid rgba(0,255,100,0.3); z-index: 200; animation: slideDown 0.4s ease-out; cursor: pointer; }
+    @keyframes slideDown { from { transform: translateY(-70px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    .app-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 50; display: flex; flex-direction: column; }
+    .success-popup { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(20,20,20,0.95); border: 2px solid #34c759; border-radius: 20px; padding: 24px; text-align: center; z-index: 500; box-shadow: 0 15px 35px rgba(0,0,0,0.8); animation: popIn 0.3s ease-out; }
+    .error-popup { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(30,10,10,0.95); border: 2px solid #ff3b30; border-radius: 20px; padding: 24px; text-align: center; z-index: 500; box-shadow: 0 15px 35px rgba(0,0,0,0.8); animation: popIn 0.3s ease-out; }
+    @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+    .face-verify-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 400; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; }
+
+    .app-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 50; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .app-nav-bar { height: 50px; background: #1c1c1e; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #333; flex-shrink: 0; }
     .app-body { flex: 1; overflow-y: auto; padding: 16px; }
     
@@ -32,15 +40,21 @@
     .ios-btn.success { background: #34c759; }
     .ios-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-    .slot-machine-box { background: #222; border-radius: 16px; padding: 14px; border: 2px solid #444; margin: 10px 0; text-align: center; }
+    .slot-machine-box { background: #222; border-radius: 16px; padding: 14px; border: 2px solid #444; margin: 10px 0; box-shadow: inset 0 0 10px #000; text-align: center; }
     .slot-reels-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
-    .slot-reel { width: 70px; height: 80px; background: #000; border-radius: 10px; border: 2px solid #ffd700; display: flex; justify-content: center; align-items: center; font-size: 38px; }
+    .slot-reel { width: 70px; height: 80px; background: #000; border-radius: 10px; border: 2px solid #ffd700; display: flex; justify-content: center; align-items: center; font-size: 38px; overflow: hidden; position: relative; }
+    .slot-reel-inner { display: flex; flex-direction: column; align-items: center; position: absolute; }
+    .spinning { animation: reelSpin 0.1s linear infinite; }
+    @keyframes reelSpin { 0% { transform: translateY(0); } 100% { transform: translateY(-120px); } }
 
     .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin: 6px 0; font-size: 13px; line-height: 1.4; word-break: break-all; }
     .chat-bubble.incoming { background: #262628; color: #fff; align-self: flex-start; }
     .chat-bubble.outgoing { background: #00b900; color: #fff; align-self: flex-end; }
     .chat-bubble.link-box { background: #1e3a5f; border: 1px solid #007aff; cursor: pointer; }
     .voice-msg-btn { display: inline-block; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 12px; cursor: pointer; margin-top: 6px; font-size: 11px; color: #00ffcc; }
+
+    .shake { animation: shakeAnim 0.4s ease-in-out; }
+    @keyframes shakeAnim { 0%, 100% { transform: translate(0); } 20%, 60% { transform: translate(-8px, 6px); } 40%, 80% { transform: translate(8px, -6px); } }
   </style>
 </head>
 <body>
@@ -54,30 +68,30 @@
 
   <div class="iphone-screen" id="phone-screen">
     <div class="home-desktop">
-      <div class="news-banner" onclick="openApp('news')">
+      <div class="news-banner" onclick="playSound('click'); openApp('news')">
         <span id="news-ticker-text">📰 【即時新聞】理財專家警告：非法網路博弈與高利貸吸金陷阱頻傳...</span>
         <span style="font-size:11px; color:#aaa;">▶</span>
       </div>
 
       <div class="app-grid">
-        <div class="app-icon-container" onclick="openApp('futurePay')">
+        <div class="app-icon-container" onclick="playSound('click'); openApp('futurePay')">
           <div class="app-icon" style="background: linear-gradient(135deg, #007aff, #00c6ff);">💳</div>
           <span class="app-label">未來支付</span>
         </div>
-        <div class="app-icon-container" onclick="openApp('messages')">
+        <div class="app-icon-container" onclick="playSound('click'); openApp('messages')">
           <div class="app-icon" style="background: linear-gradient(135deg, #00b900, #009900);">💬</div>
           <span class="app-label">Line 訊息</span>
           <div class="badge" id="total-msg-badge">0</div>
         </div>
-        <div class="app-icon-container" onclick="openApp('ig')">
+        <div class="app-icon-container" onclick="playSound('click'); openApp('ig')">
           <div class="app-icon" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);">📸</div>
           <span class="app-label">IG</span>
         </div>
-        <div class="app-icon-container" id="casino-app-icon" style="display:none;" onclick="openApp('casino')">
+        <div class="app-icon-container" id="casino-app-icon" style="display:none;" onclick="playSound('click'); openApp('casino')">
           <div class="app-icon" style="background: linear-gradient(135deg, #ff9500, #ff3b30);">🎲</div>
           <span class="app-label">橘哥娛樂城</span>
         </div>
-        <div class="app-icon-container" id="loan-app-icon" style="display:none;" onclick="openApp('loan')">
+        <div class="app-icon-container" id="loan-app-icon" style="display:none;" onclick="playSound('click'); openApp('loan')">
           <div class="app-icon" style="background: linear-gradient(135deg, #5856d6, #3226a0);">💰</div>
           <span class="app-label">借貸錢莊</span>
         </div>
@@ -86,7 +100,7 @@
       <div style="background: rgba(0,0,0,0.6); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.15); margin-top: auto;">
         <h3 id="story-title" style="margin:0 0 4px 0; color:#00ffcc; font-size:15px;">第 1 天</h3>
         <div id="day-task-status" style="font-size:11px; color:#ff9500; margin-bottom:6px; line-height:1.3;">📌 待辦事項：處理今日帳單開銷。</div>
-        <button class="ios-btn success" onclick="nextDay()">結束今天，進入明天</button>
+        <button class="ios-btn success" onclick="playSound('click'); nextDay()">結束今天，進入明天</button>
       </div>
     </div>
   </div>
@@ -106,23 +120,47 @@
       osc.connect(gain);
       gain.connect(audioCtxInstance.destination);
 
-      if (type === 'line') {
+      if (type === 'click') {
+        osc.frequency.setValueAtTime(800, audioCtxInstance.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.05);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.05);
+      } else if (type === 'line') {
         osc.frequency.setValueAtTime(1046.5, audioCtxInstance.currentTime); 
         osc.frequency.setValueAtTime(1318.5, audioCtxInstance.currentTime + 0.1); 
         gain.gain.setValueAtTime(0.2, audioCtxInstance.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.25);
         osc.start(); osc.stop(audioCtxInstance.currentTime + 0.25);
-      } else if (type === 'win' || type === 'success') {
+      } else if (type === 'spin') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtxInstance.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.1);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.1);
+      } else if (type === 'win') {
+        osc.type = 'triangle';
         osc.frequency.setValueAtTime(523.25, audioCtxInstance.currentTime);
         osc.frequency.setValueAtTime(659.25, audioCtxInstance.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.2, audioCtxInstance.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.3);
-        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.3);
-      } else {
+        osc.frequency.setValueAtTime(783.99, audioCtxInstance.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.3, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.5);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.5);
+      } else if (type === 'success-pay') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtxInstance.currentTime);
+        osc.frequency.setValueAtTime(659.25, audioCtxInstance.currentTime + 0.08);
+        osc.frequency.setValueAtTime(783.99, audioCtxInstance.currentTime + 0.16);
+        osc.frequency.setValueAtTime(1046.50, audioCtxInstance.currentTime + 0.24);
+        gain.gain.setValueAtTime(0.3, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.6);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.6);
+      } else if (type === 'lose' || type === 'error-pay') {
+        osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(180, audioCtxInstance.currentTime);
-        gain.gain.setValueAtTime(0.2, audioCtxInstance.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.2);
-        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.2);
+        osc.frequency.setValueAtTime(90, audioCtxInstance.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.4);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.4);
       }
     } catch(e) {}
   }
@@ -180,11 +218,13 @@
     let totalUnread = 0;
     for (let k in state.contacts) { totalUnread += state.contacts[k].unread; }
     let badgeEl = document.getElementById("total-msg-badge");
-    if (totalUnread > 0) {
-      badgeEl.innerText = totalUnread;
-      badgeEl.style.display = "block";
-    } else {
-      badgeEl.style.display = "none";
+    if (badgeEl) {
+      if (totalUnread > 0) {
+        badgeEl.innerText = totalUnread;
+        badgeEl.style.display = "block";
+      } else {
+        badgeEl.style.display = "none";
+      }
     }
 
     let taskEl = document.getElementById("day-task-status");
@@ -208,6 +248,7 @@
                       '<div style="font-weight:bold; font-size:13px;">' + senderName + '</div>' +
                       '<div style="font-size:12px; color:#ddd;">' + text + '</div>';
     notif.onclick = function() {
+      playSound('click');
       notif.remove();
       openChat(contactKey);
     };
@@ -227,7 +268,7 @@
     let navBar = document.createElement("div");
     navBar.className = "app-nav-bar";
     navBar.innerHTML = '<span style="font-weight:600; font-size:15px;">' + getAppTitle(appId) + '</span>' +
-                       '<span style="color:#00b900; cursor:pointer; font-weight:600;" onclick="closeApp()">關閉</span>';
+                       '<span style="color:#00b900; cursor:pointer; font-weight:600;" onclick="playSound(\'click\'); closeApp()">關閉</span>';
     view.appendChild(navBar);
 
     let body = document.createElement("div");
@@ -254,7 +295,7 @@
           btn.className = "ios-btn success";
           btn.style.cssText = "width:auto; padding:6px 12px; font-size:11px; margin:0;";
           btn.innerText = "還款";
-          btn.onclick = function() { repayLoan(idx); };
+          btn.onclick = function() { playSound('click'); repayLoan(idx); };
           item.appendChild(btn);
           loanBox.appendChild(item);
         });
@@ -269,7 +310,7 @@
         let payBtn = document.createElement("button");
         payBtn.className = "ios-btn danger";
         payBtn.innerText = "手動繳納";
-        payBtn.onclick = payBill;
+        payBtn.onclick = function() { playSound('click'); payBill(); };
         billBox.appendChild(payBtn);
       } else {
         billBox.innerHTML = '<div style="font-size:12px; color:#34c759;">✅ 今日生活開銷與帳單已全數繳清！</div>';
@@ -285,7 +326,7 @@
                              '<div style="flex:1;">' +
                              '<div style="font-weight:600; font-size:14px;">' + c.name + (c.unread > 0 ? ' <span style="background:#00b900; font-size:10px; padding:1px 6px; border-radius:8px;">未讀</span>' : '') + '</div>' +
                              '<div style="font-size:12px; color:#aaa;">' + c.messages[c.messages.length - 1].text + '</div></div>';
-        chatItem.onclick = (k => () => openChat(k))(key);
+        chatItem.onclick = (k => () => { playSound('click'); openChat(k); })(key);
         body.appendChild(chatItem);
       }
 
@@ -298,9 +339,9 @@
                        '<p style="font-size:12px; color:#aaa;">即時餘額：<b id="casino-live-cash" style="color:#34c759;">NT$ ' + state.cash.toLocaleString() + '</b></p>' +
                        '<div class="slot-machine-box">' +
                        '<div class="slot-reels-container">' +
-                       '<div class="slot-reel" id="reel-1">🎰</div>' +
-                       '<div class="slot-reel" id="reel-2">🎰</div>' +
-                       '<div class="slot-reel" id="reel-3">🎰</div>' +
+                       '<div class="slot-reel"><div class="slot-reel-inner" id="reel-1">🎰</div></div>' +
+                       '<div class="slot-reel"><div class="slot-reel-inner" id="reel-2">🎰</div></div>' +
+                       '<div class="slot-reel"><div class="slot-reel-inner" id="reel-3">🎰</div></div>' +
                        '</div><div id="gamble-res" style="font-weight:bold; font-size:13px; min-height:18px; color:#ff9500;"></div></div>';
 
       let btnGroup = document.createElement("div");
@@ -311,7 +352,7 @@
         b.className = "ios-btn";
         b.style.cssText = "margin:0; padding:10px; font-size:13px;";
         b.innerText = "下注 " + amt.toLocaleString();
-        b.onclick = () => playSlotAnimation(amt);
+        b.onclick = () => { playSound('click'); playSlotAnimation(amt); };
         btnGroup.appendChild(b);
       });
 
@@ -321,7 +362,7 @@
           b.className = "ios-btn";
           b.style.cssText = "margin:0; padding:10px; font-size:13px;";
           b.innerText = "下注 " + amt.toLocaleString();
-          b.onclick = () => playSlotAnimation(amt);
+          b.onclick = () => { playSound('click'); playSlotAnimation(amt); };
           btnGroup.appendChild(b);
         });
       }
@@ -331,7 +372,7 @@
         let allInBtn = document.createElement("button");
         allInBtn.className = "ios-btn danger";
         allInBtn.innerText = "🔥 梭哈 (All-in)";
-        allInBtn.onclick = () => playSlotAnimation(state.cash);
+        allInBtn.onclick = () => { playSound('click'); playSlotAnimation(state.cash); };
         body.appendChild(allInBtn);
       }
 
@@ -348,7 +389,7 @@
 
       let infoBox = document.createElement("div");
       infoBox.style.cssText = "font-size:11px; color:#ff9500; margin-bottom:10px; background:rgba(255,149,0,0.1); padding:8px; border-radius:8px;";
-      infoBox.innerHTML = "💡 當前借貸利率：<b>" + Math.round(currentRate * 100) + "%</b>。今天借款**不用今天還**，隔天才需清償！";
+      infoBox.innerHTML = "💡 當前借貸利率：<b>" + Math.round(currentRate * 100) + "%</b>。今天借款不用今天還，隔天才需清償！";
       body.appendChild(infoBox);
 
       platforms.forEach(p => {
@@ -363,7 +404,7 @@
         loanBtn.style.cssText = "padding:6px; font-size:12px; margin-top:6px;";
         loanBtn.innerText = isBorrowed ? "已借過" : "立即申貸";
         loanBtn.disabled = isBorrowed;
-        loanBtn.onclick = () => requestLoan(p.name, p.amount, p.rate);
+        loanBtn.onclick = () => { playSound('click'); requestLoan(p.name, p.amount, p.rate); };
         pDiv.appendChild(loanBtn);
         body.appendChild(pDiv);
       });
@@ -400,7 +441,7 @@
     let navBar = document.createElement("div");
     navBar.className = "app-nav-bar";
     navBar.innerHTML = '<span style="font-weight:600;">' + c.avatar + ' ' + c.name + '</span>' +
-                       '<span style="color:#00b900; cursor:pointer;" onclick="this.closest(\'.app-view\').remove()">返回</span>';
+                       '<span style="color:#00b900; cursor:pointer;" onclick="playSound(\'click\'); this.closest(\'.app-view\').remove()">返回</span>';
     view.appendChild(navBar);
 
     let body = document.createElement("div");
@@ -420,11 +461,11 @@
 
       if (m.isCasinoLink) {
         b.className += " link-box";
-        b.onclick = installCasino;
+        b.onclick = () => { playSound('click'); installCasino(); };
       }
       if (m.isLoanLink) {
         b.className += " link-box";
-        b.onclick = installLoan;
+        b.onclick = () => { playSound('click'); installLoan(); };
       }
       body.appendChild(b);
     });
@@ -434,15 +475,30 @@
   }
 
   function payBill() {
+    let screen = document.getElementById("phone-screen");
     if (state.cash < state.currentBill.amount) {
-      playSound('lose');
-      alert("❌ 餘額不足！無法支付 " + state.currentBill.name);
+      playSound('error-pay');
+      let errPopup = document.createElement("div");
+      errPopup.className = "error-popup";
+      errPopup.innerHTML = '<div style="font-size:36px; margin-bottom:8px;">❌</div>' +
+                           '<div style="font-size:16px; font-weight:bold; color:#ff3b30; margin-bottom:4px;">餘額不足！</div>' +
+                           '<div style="font-size:12px; color:#ddd;">帳戶現金不足以支付 ' + state.currentBill.name + '</div>';
+      screen.appendChild(errPopup);
+      setTimeout(() => errPopup.remove(), 1800);
       return;
     }
     state.cash -= state.currentBill.amount;
     state.currentBill.paid = true;
-    playSound('success');
-    alert("🎉 支付成功！");
+    playSound('success-pay');
+
+    let popup = document.createElement("div");
+    popup.className = "success-popup";
+    popup.innerHTML = '<div style="font-size:36px; margin-bottom:8px;">🎉</div>' +
+                      '<div style="font-size:16px; font-weight:bold; color:#34c759; margin-bottom:4px;">支付成功！</div>' +
+                      '<div style="font-size:12px; color:#ddd;">已完成 ' + state.currentBill.name + '</div>';
+    screen.appendChild(popup);
+    setTimeout(() => popup.remove(), 1600);
+
     closeApp();
     openApp('futurePay');
     updateUI();
@@ -450,15 +506,30 @@
 
   function repayLoan(idx) {
     let l = state.loans[idx];
+    let screen = document.getElementById("phone-screen");
     if (state.cash < l.amount) {
-      playSound('lose');
-      alert("❌ 現金不足以償還此筆高利貸！");
+      playSound('error-pay');
+      let errPopup = document.createElement("div");
+      errPopup.className = "error-popup";
+      errPopup.innerHTML = '<div style="font-size:36px; margin-bottom:8px;">❌</div>' +
+                           '<div style="font-size:16px; font-weight:bold; color:#ff3b30; margin-bottom:4px;">餘額不足！</div>' +
+                           '<div style="font-size:12px; color:#ddd;">現金不足以償還 ' + l.name + '</div>';
+      screen.appendChild(errPopup);
+      setTimeout(() => errPopup.remove(), 1800);
       return;
     }
     state.cash -= l.amount;
     state.loans.splice(idx, 1);
-    playSound('success');
-    alert("✅ 成功還清 " + l.name);
+    playSound('success-pay');
+
+    let popup = document.createElement("div");
+    popup.className = "success-popup";
+    popup.innerHTML = '<div style="font-size:36px; margin-bottom:8px;">🎉</div>' +
+                      '<div style="font-size:16px; font-weight:bold; color:#34c759; margin-bottom:4px;">還款成功！</div>' +
+                      '<div style="font-size:12px; color:#ddd;">已清償 ' + l.name + '</div>';
+    screen.appendChild(popup);
+    setTimeout(() => popup.remove(), 1600);
+
     closeApp();
     openApp('futurePay');
     updateUI();
@@ -489,32 +560,49 @@
       return;
     }
 
+    let r1 = document.getElementById("reel-1");
+    let r2 = document.getElementById("reel-2");
+    let r3 = document.getElementById("reel-3");
     let resEl = document.getElementById("gamble-res");
+    if (!r1 || !r2 || !r3 || !resEl) return;
+
+    r1.className = "slot-reel-inner spinning";
+    r2.className = "slot-reel-inner spinning";
+    r3.className = "slot-reel-inner spinning";
     resEl.innerText = "旋轉中...";
-    playSound('line');
+    playSound('spin');
 
     setTimeout(() => {
-      let winProb = 0.7;
-      if (amount >= 50000) winProb = 0.15;
+      let winProb = 0.72;
+      if (amount === 10000) winProb = 0.70;
+      else if (amount === 50000) winProb = 0.20;
+      else if (amount === state.cash && amount > 50000) winProb = 0.10;
+      else if (state.day >= 10) winProb = 0.25;
+
       let isWin = Math.random() < winProb;
 
+      r1.className = "slot-reel-inner";
+      r2.className = "slot-reel-inner";
+      r3.className = "slot-reel-inner";
+
       if (isWin) {
-        document.getElementById("reel-1").innerText = "7️⃣";
-        document.getElementById("reel-2").innerText = "7️⃣";
-        document.getElementById("reel-3").innerText = "7️⃣";
+        r1.innerText = "7️⃣"; r2.innerText = "7️⃣"; r3.innerText = "7️⃣";
         let win = Math.floor(amount * 1.5);
         state.cash += win;
         resEl.style.color = "#34c759";
-        resEl.innerText = "🎉 贏得 NT$ " + win.toLocaleString();
+        resEl.innerText = "🎉 中大獎！贏得 NT$ " + win.toLocaleString();
         playSound('win');
       } else {
-        document.getElementById("reel-1").innerText = "🍒";
-        document.getElementById("reel-2").innerText = "💎";
-        document.getElementById("reel-3").innerText = "7️⃣";
+        r1.innerText = "🍒"; r2.innerText = "💎"; r3.innerText = "7️⃣";
         state.cash -= amount;
         resEl.style.color = "#ff3b30";
-        resEl.innerText = "😢 損失 NT$ " + amount.toLocaleString();
+        resEl.innerText = "😢 未中獎，損失 NT$ " + amount.toLocaleString();
         playSound('lose');
+        let frame = document.getElementById("phone-frame");
+        if (frame) {
+          frame.classList.add("shake");
+          setTimeout(() => frame.classList.remove("shake"), 400);
+        }
       }
 
       state.spinsToday++;
@@ -527,47 +615,88 @@
           state.contacts.friend.unread++;
           state.contacts.friend.messages.push({
             sender: "friend",
-            text: "兄弟，看你快沒錢了？快用這個『借貸錢莊 App』借錢翻盤！",
+            text: "兄弟，看你現金快見底了？快用這個『借貸錢莊 App』借錢翻盤！",
             isLoanLink: true
           });
           triggerNotification("好友阿偉", "快用這個『借貸錢莊 App』借錢翻盤！", "friend");
           updateUI();
         }, 500);
       }
-    }, 1000);
+    }, 1200);
   }
 
   function requestLoan(name, amount, rate) {
     if (state.borrowedPlatforms.includes(name)) return;
-    let totalRepay = Math.floor(amount * (1 + rate));
-    alert("✅ 審核通過！已撥款 NT$ " + amount.toLocaleString() + "。\n💡 提醒：今天借款不需要今天還，本利和共 NT$ " + totalRepay.toLocaleString() + " 將於【明天】到期需在未來支付還款！");
-    
-    state.loans.push({ name: name, amount: totalRepay });
-    state.borrowedPlatforms.push(name);
-    state.cash += amount;
+    let screen = document.getElementById("phone-screen");
+    if (!screen) return;
 
-    let colKey = "col_" + Date.now();
-    state.contacts[colKey] = {
-      name: name + " 催收",
-      avatar: "⚠️",
-      unread: 1,
-      messages: [{ sender: colKey, text: "本利和 NT$ " + totalRepay.toLocaleString() + "，明天到期必須清償！" }]
-    };
-    triggerNotification(name + " 催收", "本利和 NT$ " + totalRepay.toLocaleString() + " 須於明天清償！", colKey);
-    closeApp();
-    updateUI();
+    let modal = document.createElement("div");
+    modal.className = "face-verify-modal";
+    modal.innerHTML = '<div style="font-size:36px; margin-bottom:10px;">📸</div>' +
+                      '<h3 style="color:#fff; margin-bottom:6px;">面容身份審核</h3>' +
+                      '<p id="verify-text" style="font-size:13px; color:#ff9500; margin-bottom:20px;">請確認眼鏡是否有摘除，以進行人臉識別解鎖</p>' +
+                      '<button class="ios-btn success" id="snap-btn" onclick="playSound(\'click\'); startCameraSnap(\'' + name + '\', ' + amount + ', ' + rate + ')">點擊拍照按鈕</button>';
+    screen.appendChild(modal);
+  }
+
+  function startCameraSnap(name, amount, rate) {
+    let textEl = document.getElementById("verify-text");
+    let btnEl = document.getElementById("snap-btn");
+    if (btnEl) btnEl.style.display = "none";
+
+    let count = 3;
+    textEl.style.fontSize = "24px";
+    textEl.style.color = "#00ffcc";
+    textEl.innerText = count;
+
+    let timer = setInterval(() => {
+      count--;
+      if (count > 0) {
+        textEl.innerText = count;
+      } else {
+        clearInterval(timer);
+        textEl.innerText = "✅ 核准完成！";
+        playSound('win');
+
+        setTimeout(() => {
+          let modal = document.querySelector(".face-verify-modal");
+          if (modal) modal.remove();
+
+          let totalRepay = Math.floor(amount * (1 + rate));
+          alert("✅ 審核通過！「" + name + "」已撥款 NT$ " + amount.toLocaleString() + "。\n💡 提醒：今天借款不需要今天還，本利和共 NT$ " + totalRepay.toLocaleString() + " 將於【明天】到期需在未來支付還款！");
+          
+          state.loans.push({ name: name, amount: totalRepay });
+          state.borrowedPlatforms.push(name);
+          state.cash += amount;
+
+          let colKey = "col_" + Date.now();
+          state.contacts[colKey] = {
+            name: name + " 催收",
+            avatar: "⚠️",
+            unread: 1,
+            messages: [{ sender: colKey, text: "本利和 NT$ " + totalRepay.toLocaleString() + "，明天到期必須清償！" }]
+          };
+          triggerNotification(name + " 催收", "本利和 NT$ " + totalRepay.toLocaleString() + " 須於明天清償！", colKey);
+          closeApp();
+          updateUI();
+        }, 1000);
+      }
+    }, 1000);
   }
 
   function nextDay() {
     if (state.casinoInstalled && state.spinsToday < 10) {
+      playSound('error-pay');
       alert("【任務未完成】轉輪盤尚未達到 10 次！");
       return;
     }
     if (!state.currentBill.paid) {
+      playSound('error-pay');
       alert("【財務未完成】今天必須在「未來支付」繳納帳單！");
       return;
     }
     if (state.loans.length > 0) {
+      playSound('error-pay');
       alert("【強制還款警告】身上仍有未清償的高利貸，必須先在「未來支付」還款完畢！");
       return;
     }
@@ -577,7 +706,6 @@
     state.loanVisitCount++;
     state.borrowedPlatforms = [];
 
-    // 第二天觸發阿偉傳送娛樂城連結
     if (state.day === 2) {
       state.contacts.friend.unread++;
       state.contacts.friend.messages.push({
