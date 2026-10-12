@@ -38,7 +38,7 @@
     .slot-reels-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; }
     .slot-reel { width: 70px; height: 80px; background: #000; border-radius: 10px; border: 2px solid #ffd700; display: flex; justify-content: center; align-items: center; font-size: 38px; overflow: hidden; position: relative; }
     .slot-reel-inner { display: flex; flex-direction: column; align-items: center; position: absolute; }
-    .spinning { animation: reelSpin 0.15s linear infinite; }
+    .spinning { animation: reelSpin 0.1s linear infinite; }
     @keyframes reelSpin { 0% { transform: translateY(0); } 100% { transform: translateY(-120px); } }
 
     /* 聊天室與語音 */
@@ -150,6 +150,13 @@
       gain.gain.setValueAtTime(0.3, AudioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.4);
       osc.start(); osc.stop(AudioCtx.currentTime + 0.4);
+    } else if (type === 'error') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(130, AudioCtx.currentTime);
+      osc.frequency.setValueAtTime(90, AudioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, AudioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.35);
+      osc.start(); osc.stop(AudioCtx.currentTime + 0.35);
     }
   }
 
@@ -176,17 +183,13 @@
     casinoInstalled: false,
     loanInstalled: false,
     spinsToday: 0,
-    spinPatternIdx: 0,
-    highStakeUnlocked: false,
+    allInUnlocked: false,
     contacts: {
       wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️", voice: "老公，今天發薪水辛苦啦，晚上記得早點回家吃飯喔！" }] },
       child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？", voice: "爸爸，我今天考了95分喔！" }] },
       friend: { name: "好友阿偉", avatar: "🧔", unread: 0, messages: [{ sender: "friend", text: "兄弟，最近過得怎樣？有空出來喝一杯啊！" }] }
     }
   };
-
-  // 前期預設勝負循環 pattern (勝, 勝, 勝, 負)
-  const day23Pattern = [true, true, true, false];
 
   function updateUI() {
     document.getElementById("day-badge").innerText = `第 ${state.day} 天`;
@@ -319,8 +322,7 @@
             <button class="ios-btn" style="margin:0;" onclick="playSlotAnimation(10000)">下注 10,000</button>
             <button class="ios-btn" style="margin:0;" onclick="playSlotAnimation(50000)">下注 50,000</button>
           </div>
-          ${state.highStakeUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(100000)" style="font-size:15px; background:#ff2d55;">🔥 VIP高額賭注：一注 100,000</button>` : ''}
-          <button class="ios-btn danger" onclick="playSlotAnimation(state.cash)">🔥 梭哈 (All-in)</button>
+          ${state.allInUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:15px; background:#ff2d55;">🔥 梭哈 (All-in)</button>` : '<div style="font-size:11px; color:#666; margin-top:6px;">🔒 梭哈功能需在後續進度解鎖</div>'}
         </div>
       `;
     } else if (appId === 'loan') {
@@ -435,7 +437,7 @@
     updateUI();
   }
 
-  // 拉霸機滾輪動畫與賠率
+  // 拉霸機滾輪動畫與動態非制式勝率
   function playSlotAnimation(amount) {
     if (amount <= 0 || state.cash < amount) {
       alert("現金不足！");
@@ -450,27 +452,22 @@
     r1.className = "slot-reel-inner spinning";
     r2.className = "slot-reel-inner spinning";
     r3.className = "slot-reel-inner spinning";
-    resEl.innerText = "旋轉中...";
+    resEl.innerText = "拉霸旋轉中...";
     playSound('spin');
 
+    // 延長拉霸轉動動畫時間（更有沉浸與期待感）
     setTimeout(() => {
       let isWin = false;
       
-      // 第 2 天與第 3 天：轉三次贏，轉一次輸 (Pattern 循環)
       if (state.day === 2 || state.day === 3) {
-        isWin = day23Pattern[state.spinPatternIdx % day23Pattern.length];
-        state.spinPatternIdx++;
+        // 前期設計較高勝率但伴隨虧損的心理陷阱，不採死板規律
+        let rand = Math.random();
+        isWin = rand < 0.65; // 65%勝率，但輸的時候會咬掉大筆金額
       } else if (state.day === 4) {
-        if (state.spinsToday < 2) isWin = true; // 前 2 轉必贏
-        else if (state.spinsToday === 2 && !state.highStakeUnlocked) {
-          state.highStakeUnlocked = true;
-          alert("🎉 恭喜連勝！系統已自動為您解鎖【VIP高額賭注區】：可押注 100,000！");
-          closeApp(); openApp('casino'); return;
-        } else {
-          isWin = false; // 後續必輸
-        }
+        // 第四天若還沒輸光，逐步回收玩家現金
+        isWin = state.cash > 50000 ? (Math.random() < 0.2) : false;
       } else {
-        isWin = Math.random() < 0.2; // 隨天數失控
+        isWin = Math.random() < 0.3; 
       }
 
       r1.className = "slot-reel-inner";
@@ -495,25 +492,25 @@
       }
 
       state.spinsToday++;
-      // 即時更新金額
-      document.getElementById("casino-live-cash").innerText = `NT$ ${state.cash.toLocaleString()}`;
+      let liveCashEl = document.getElementById("casino-live-cash");
+      if (liveCashEl) liveCashEl.innerText = `NT$ ${state.cash.toLocaleString()}`;
       updateUI();
 
-      // 第 4 天輸光觸發阿偉推薦貸款
-      if (state.day === 4 && state.cash < 20000 && !state.loanInstalled) {
+      // 檢查是否提前在前幾天把現金輸光，若輸光立即觸發好友推薦網貸平台
+      if (state.cash <= 0 && !state.loanInstalled && state.casinoInstalled) {
         setTimeout(() => {
           state.contacts.friend.unread++;
           state.contacts.friend.messages.push({
             sender: "friend",
-            text: "兄弟，看你輸光了？沒事啦！我都在這個『借貸錢莊 App』拿週轉金，免審核三秒到帳，你快借點錢還房租！",
+            text: "兄弟，我聽說你錢全輸光了？別慌！我都在這個『借貸錢莊 App』拿週轉金，免審核三秒到帳，你快載來借點錢翻本！",
             isLoanLink: true
           });
-          triggerNotification("好友阿偉", "兄弟，看你輸光了？我都在這個『借貸錢莊』拿週轉金...", "friend");
+          triggerNotification("好友阿偉", "兄弟，聽說你錢全輸光了？我都在這個『借貸錢莊』拿週轉金...", "friend");
           updateUI();
-        }, 600);
+        }, 800);
       }
 
-    }, 800);
+    }, 1500); // 動畫時間拉長至 1.5 秒
   }
 
   function requestLoan(name, amount, rate) {
@@ -531,17 +528,17 @@
     }
   }
 
-  // 進入下一天 (含過場動畫)
+  // 進入下一天 (含過場動畫與未完成任務防呆音效)
   function nextDay() {
     if (state.day === 2) {
-      if (!state.casinoInstalled) { alert("【今日任務未完成】請先查看阿偉訊息並下載「橘哥娛樂城」！"); return; }
-      if (state.spinsToday < 10) { alert(`【今日任務未完成】請在娛樂城試玩拉霸機！目前進度 (${state.spinsToday}/10 次)`); return; }
+      if (!state.casinoInstalled) { playSound('error'); alert("【今日任務未完成】請先查看阿偉訊息並下載「橘哥娛樂城」！"); return; }
+      if (state.spinsToday < 10) { playSound('error'); alert(`【今日任務未完成】請在娛樂城試玩拉霸機！目前進度 (${state.spinsToday}/10 次)`); return; }
     }
     if (state.day === 3 && state.spinsToday < 10) {
-      alert(`【今日任務未完成】請繼續在娛樂城試玩！目前進度 (${state.spinsToday}/10 次)`); return;
+      playSound('error'); alert(`【今日任務未完成】請繼續在娛樂城試玩！目前進度 (${state.spinsToday}/10 次)`); return;
     }
-    if (state.day === 4 && !state.rentPaidDay4) {
-      alert("【財務未完成】今天必須在「未來支付」繳納房租 NT$ 20,000！餘額不足請向阿偉推薦的錢莊申貸。");
+    if (state.day === 4 && !state.rentPaidDay4 && state.cash >= 20000) {
+      playSound('error'); alert("【財務未完成】今天必須在「未來支付」繳納房租 NT$ 20,000！");
       return;
     }
 
@@ -568,6 +565,17 @@
         isCasinoLink: true
       });
       triggerNotification("好友阿偉", "欸兄弟！我最近在『橘哥娛樂城』賺超多錢！...", "friend");
+    }
+
+    // 第四天若玩家還沒安裝錢莊，好友自動推薦網貸平台
+    if (state.day === 4 && !state.loanInstalled) {
+      state.contacts.friend.unread++;
+      state.contacts.friend.messages.push({
+        sender: "friend",
+        text: "兄弟，我看你錢快花光了，房租繳不出來對吧？我推薦你用這個『借貸錢莊 App』，秒撥款超方便的啦！",
+        isLoanLink: true
+      });
+      triggerNotification("好友阿偉", "兄弟，我看你錢快花光了，房租繳不出來對吧...", "friend");
     }
 
     if (state.day === 4) {
