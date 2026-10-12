@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>橘哥娛樂城：30天 iOS 警世模擬器</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; user-select: none; }
     .iphone-frame { width: 390px; height: 810px; background: #1c1c1e; border-radius: 50px; border: 12px solid #3a3a3c; box-shadow: 0 20px 50px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; position: relative; }
     .ios-status-bar { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 24px; font-size: 14px; font-weight: 600; color: #fff; background: transparent; z-index: 100; flex-shrink: 0; }
     .dynamic-island { width: 110px; height: 28px; background: #000; border-radius: 14px; position: absolute; left: 50%; transform: translateX(-50%); top: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #00ffcc; font-weight: bold; }
@@ -17,22 +17,42 @@
     .app-icon { width: 60px; height: 60px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 26px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.1s; }
     .app-icon:active { transform: scale(0.92); }
     .app-label { font-size: 11px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-    .badge { position: absolute; top: -2px; right: 8px; background: #ff3b30; color: white; border-radius: 10px; font-size: 10px; padding: 2px 6px; font-weight: bold; }
+    .badge { position: absolute; top: -2px; right: 8px; background: #ff3b30; color: white; border-radius: 10px; font-size: 10px; padding: 2px 6px; font-weight: bold; display: none; }
+    
+    /* 即時 iOS 通知彈窗 */
+    .ios-notification { position: absolute; top: 50px; left: 12px; right: 12px; background: rgba(40,40,40,0.95); backdrop-filter: blur(20px); border-radius: 16px; padding: 12px 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); z-index: 200; animation: slideDown 0.4s ease-out; cursor: pointer; }
+    @keyframes slideDown { from { transform: translateY(-70px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
     .app-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 50; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .app-nav-bar { height: 50px; background: #1c1c1e; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #333; flex-shrink: 0; }
     .app-body { flex: 1; overflow-y: auto; padding: 16px; }
+    
     .ios-btn { width: 100%; padding: 12px; background: #007aff; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin: 8px 0; text-align: center; }
     .ios-btn:active { opacity: 0.8; }
     .ios-btn.danger { background: #ff3b30; }
     .ios-btn.success { background: #34c759; }
-    .slot-reel { display: inline-block; width: 68px; height: 68px; line-height: 68px; background: #2c2c2e; font-size: 2em; text-align: center; border-radius: 12px; border: 2px solid #555; margin: 0 4px; }
-    .slot-spinning { animation: spin 0.1s infinite linear; }
-    @keyframes spin { 0% { content: "🍒"; } 50% { content: "💎"; } 100% { content: "7️⃣"; } }
-    .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin: 6px 0; font-size: 13px; line-height: 1.4; word-break: break-all; }
+
+    /* 拉霸動畫與外觀 */
+    .slot-machine-box { background: #222; border-radius: 16px; padding: 16px; border: 2px solid #444; margin: 15px 0; box-shadow: inset 0 0 10px #000; }
+    .slot-reels-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; }
+    .slot-reel { width: 70px; height: 80px; background: #000; border-radius: 10px; border: 2px solid #ffd700; display: flex; justify-content: center; align-items: center; font-size: 38px; overflow: hidden; position: relative; }
+    .slot-reel-inner { display: flex; flex-direction: column; align-items: center; position: absolute; }
+    .spinning { animation: reelSpin 0.15s linear infinite; }
+    @keyframes reelSpin { 0% { transform: translateY(0); } 100% { transform: translateY(-120px); } }
+
+    /* 聊天室與語音 */
+    .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin: 6px 0; font-size: 13px; line-height: 1.4; word-break: break-all; position: relative; }
     .chat-bubble.incoming { background: #262628; color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
     .chat-bubble.outgoing { background: #007aff; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
     .chat-bubble.link-box { background: #1e3a5f; border: 1px solid #007aff; cursor: pointer; }
+    .unread-dot { width: 8px; height: 8px; background: #ff3b30; border-radius: 50%; display: inline-block; margin-left: 6px; }
+    .voice-msg-btn { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; cursor: pointer; width: fit-content; margin-top: 4px; }
+
+    /* 過場天數牆 */
+    .day-transition-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 300; display: flex; flex-direction: column; justify-content: center; align-items: center; animation: fadeInOut 1.8s ease-in-out forwards; }
+    @keyframes fadeInOut { 0% { opacity: 0; } 30% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
+    
     .shake { animation: shakeAnim 0.4s ease-in-out; }
     @keyframes shakeAnim { 0%, 100% { transform: translate(0); } 20%, 60% { transform: translate(-8px, 6px); } 40%, 80% { transform: translate(8px, -6px); } }
   </style>
@@ -40,29 +60,33 @@
 <body>
 
 <div class="iphone-frame" id="phone-frame">
+  <!-- iOS 狀態列 -->
   <div class="ios-status-bar">
-    <span>18:00</span>
-    <div class="dynamic-island" id="day-badge">第 1 天 / 30天</div>
+    <span id="current-time">18:00</span>
+    <div class="dynamic-island" id="day-badge">第 1 天</div>
     <span>5G 🔋</span>
   </div>
 
   <div class="iphone-screen" id="phone-screen">
+    <!-- 主畫面桌面 -->
     <div class="home-desktop">
       
+      <!-- 輪播新聞 -->
       <div class="news-banner" onclick="openApp('news')">
-        <span id="news-ticker-text">📰 【即時新聞】台北市房市平穩，專家提醒理性理財...</span>
+        <span id="news-ticker-text">📰 【即時新聞】理財專家提醒：警惕高利貸陷阱...</span>
         <span style="font-size:11px; color:#aaa;">▶</span>
       </div>
 
+      <!-- App 網格 -->
       <div class="app-grid">
-        <div class="app-icon-container" onclick="openApp('accounting')">
-          <div class="app-icon" style="background: linear-gradient(135deg, #34c759, #248a3d);">📊</div>
-          <span class="app-label">記帳小幫手</span>
+        <div class="app-icon-container" onclick="openApp('futurePay')">
+          <div class="app-icon" style="background: linear-gradient(135deg, #007aff, #00c6ff);">💳</div>
+          <span class="app-label">未來支付</span>
         </div>
         <div class="app-icon-container" onclick="openApp('messages')">
-          <div class="app-icon" style="background: linear-gradient(135deg, #007aff, #0056b3);">💬</div>
+          <div class="app-icon" style="background: linear-gradient(135deg, #34c759, #11998e);">💬</div>
           <span class="app-label">訊息</span>
-          <div class="badge" id="msg-badge">2</div>
+          <div class="badge" id="total-msg-badge">0</div>
         </div>
         <div class="app-icon-container" onclick="openApp('ig')">
           <div class="app-icon" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);">📸</div>
@@ -73,15 +97,15 @@
           <span class="app-label">橘哥娛樂城</span>
         </div>
         <div class="app-icon-container" id="loan-app-icon" style="display:none;" onclick="openApp('loan')">
-          <div class="app-icon" style="background: linear-gradient(135deg, #5856d6, #3226a0);">💳</div>
+          <div class="app-icon" style="background: linear-gradient(135deg, #5856d6, #3226a0);">💰</div>
           <span class="app-label">借貸錢莊</span>
         </div>
       </div>
 
+      <!-- 底部日常任務卡片 (無劇透) -->
       <div style="background: rgba(0,0,0,0.5); border-radius: 16px; padding: 14px; border: 1px solid rgba(255,255,255,0.15); margin-top: auto;">
-        <h3 id="story-title" style="margin:0 0 6px 0; color:#ff3b30; font-size:15px;">第 1 天：平靜的開始</h3>
-        <p id="story-desc" style="font-size:12px; color:#ccc; line-height:1.4; margin:0 0 10px 0;">領到了本月薪水 NT$ 35,000。生活平靜，查看訊息瞭解家人的狀況。</p>
-        <div id="day-task-status" style="font-size:11px; color:#ff9500; margin-bottom:6px;">📌 今日任務：請查看家人傳來的訊息</div>
+        <h3 id="story-title" style="margin:0 0 6px 0; color:#00ffcc; font-size:16px;">第 1 天</h3>
+        <div id="day-task-status" style="font-size:12px; color:#ff9500; margin-bottom:8px; line-height:1.4;">📌 今日待辦：查看家人訊息並完成今日開銷處理。</div>
         <button class="ios-btn success" id="next-day-btn" onclick="nextDay()">結束今天，進入明天</button>
       </div>
 
@@ -90,88 +114,133 @@
 </div>
 
 <script>
+  // 音效系統 (Web Audio API)
+  const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function playSound(type) {
+    if (AudioCtx.state === 'suspended') AudioCtx.resume();
+    const osc = AudioCtx.createOscillator();
+    const gain = AudioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(AudioCtx.destination);
+
+    if (type === 'msg') {
+      osc.frequency.setValueAtTime(587.33, AudioCtx.currentTime); // D5
+      osc.frequency.setValueAtTime(880, AudioCtx.currentTime + 0.1); // A5
+      gain.gain.setValueAtTime(0.2, AudioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.3);
+      osc.start(); osc.stop(AudioCtx.currentTime + 0.3);
+    } else if (type === 'spin') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, AudioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, AudioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.1);
+      osc.start(); osc.stop(AudioCtx.currentTime + 0.1);
+    } else if (type === 'win') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, AudioCtx.currentTime);
+      osc.frequency.setValueAtTime(659.25, AudioCtx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(783.99, AudioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, AudioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.5);
+      osc.start(); osc.stop(AudioCtx.currentTime + 0.5);
+    } else if (type === 'lose') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, AudioCtx.currentTime);
+      osc.frequency.setValueAtTime(100, AudioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, AudioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.4);
+      osc.start(); osc.stop(AudioCtx.currentTime + 0.4);
+    }
+  }
+
+  function playVoiceSynth(text) {
+    playSound('msg');
+    if ('speechSynthesis' in window) {
+      let utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-TW';
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert(`🔊 語音播放: "${text}"`);
+    }
+  }
+
+  // 核心遊戲數據
   let state = {
     day: 1,
     maxDays: 30,
     cash: 35000,
+    rentPaidDay4: false,
     loans: [],
     hasBorrowedToday: false,
     casinoInstalled: false,
     loanInstalled: false,
     spinsToday: 0,
-    day4Spins: 0,
+    spinPatternIdx: 0,
     highStakeUnlocked: false,
-    winRate: 0.9,
     contacts: {
-      wife: { name: "老婆", avatar: "👩", messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上我煮你愛吃的紅燒肉，記得早點回家喔 ❤️" }] },
-      child: { name: "小孩", avatar: "👦", messages: [{ sender: "child", text: "爸爸！今天考試我考了 95 分喔！你下班可以帶一杯奶茶給我嗎？" }] },
-      friend: { name: "好友阿偉", avatar: "🧔", messages: [{ sender: "friend", text: "兄弟，最近過得怎樣？有空出來喝一杯啊！" }] }
+      wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️", voice: "老公，今天發薪水辛苦啦，晚上記得早點回家吃飯喔！" }] },
+      child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？", voice: "爸爸，我今天考了95分喔！" }] },
+      friend: { name: "好友阿偉", avatar: "🧔", unread: 0, messages: [{ sender: "friend", text: "兄弟，最近過得怎樣？有空出來喝一杯啊！" }] }
     }
   };
 
-  const wifeMessages = {
-    1: "老公，今天發薪水辛苦啦！晚上我煮你愛吃的紅燒肉，記得早點回家喔 ❤️",
-    2: "老公今天工作順利嗎？晚上想吃什麼菜～",
-    3: "老公，今天看你心情很好耶，是不是公司發獎金啦？",
-    4: "老公，房東剛剛傳訊息說今天一定要繳房租 20,000 元喔！你轉帳過去了嗎？",
-    5: "老公... 你身上只剩幾百塊！？那房租怎麼辦？你有錢吃午餐嗎...",
-    6: "老公，孩子補習班老師打來催繳學費 15,000 元了... 怎麼辦啊...",
-    7: "你最近晚上怎麼都一直盯著手機看？連跟你說話你都沒聽見...",
-    8: "今天怎麼有陌生號碼打給我問你的名字？老公你是不是瞞著我做了什麼？",
-    9: "我看到桌上的催繳單了！你居然跑去借高利貸！？你到底把錢花去哪裡了啊崩潰大哭！",
-    10: "家裡門口今天有怪人走來走去... 我和孩子都很害怕，你到底什麼時候要跟我們說清楚？",
-    12: "老公... 我真的受夠了每天提心吊膽的日子... 算我求求你，別再碰賭博了好嗎？",
-    15: "你連孩子的積蓄都拿走了！？那是孩子以後要上大學的錢啊！！你瘋了嗎！！",
-    21: "我們離婚吧。離婚協議書放在桌上了，我帶孩子回娘家了... 你好自為之。"
-  };
-
-  const childMessages = {
-    1: "爸爸！今天考試我考了 95 分喔！你下班可以帶一杯奶茶給我嗎？",
-    2: "爸爸，媽媽說今天晚上要吃好吃的！你幾點回家呀？",
-    3: "爸爸！你看我畫的圖，是我們一家三口喔！",
-    4: "爸爸，房東叔叔今天來家裡找你，看起來臉好臭喔...",
-    6: "爸爸，補習班老師今天當著大家的面提醒我繳學費... 好尷尬喔 😔",
-    9: "爸爸媽媽今天為什麼一直吵架... 我好害怕...",
-    14: "爸爸... 今天門外有人一直用力敲門叫你的名字... 我躲在房間不敢出來..."
-  };
-
-  const newsList = [
-    "📰 【即時新聞】台北市房市平穩，專家提醒理性理財，切勿接觸來路不明的網貸。",
-    "📰 【財經快訊】橘哥娛樂城宣佈推出全新拉霸機台，上萬名玩家線上狂歡中。",
-    "📰 【社會警語】刑事局破獲多起地下高利貸與暴力討債集團，提醒民眾借貸務必透過正當管道。"
-  ];
+  // 前期預設勝負循環 pattern (勝, 勝, 勝, 負)
+  const day23Pattern = [true, true, true, false];
 
   function updateUI() {
-    document.getElementById("day-badge").innerText = `第 ${state.day} 天 / 30天`;
-    
+    document.getElementById("day-badge").innerText = `第 ${state.day} 天`;
+    document.getElementById("story-title").innerText = `第 ${state.day} 天`;
+
+    // 計算總未讀數
+    let totalUnread = 0;
+    for (let k in state.contacts) { totalUnread += state.contacts[k].unread; }
+    let badgeEl = document.getElementById("total-msg-badge");
+    if (totalUnread > 0) {
+      badgeEl.innerText = totalUnread;
+      badgeEl.style.display = "block";
+    } else {
+      badgeEl.style.display = "none";
+    }
+
+    // 任務指示器 (無劇情劇透)
     let taskEl = document.getElementById("day-task-status");
     if (state.day === 1) {
-      taskEl.innerText = "📌 今日任務：請點開「訊息」查看老婆與小孩傳來的關心";
+      taskEl.innerText = "📌 今日待辦：查看家人訊息，在「未來支付」App 檢視現金餘額。";
     } else if (state.day === 2) {
-      if (!state.casinoInstalled) {
-        taskEl.innerText = "📌 今日任務：查看好友阿偉的訊息，並點擊連結下載「橘哥娛樂城」";
-      } else if (state.spinsToday < 10) {
-        taskEl.innerText = `📌 今日任務：開啟橘哥娛樂城試玩拉霸機 (已旋轉 ${state.spinsToday}/10 次)`;
-      } else {
-        taskEl.innerText = "✅ 今日任務已完成！可點擊下方按鈕進入下一天。";
-      }
+      if (!state.casinoInstalled) taskEl.innerText = "📌 今日待辦：點開訊息查看阿偉傳來的連結並安裝「橘哥娛樂城」。";
+      else if (state.spinsToday < 10) taskEl.innerText = `📌 今日待辦：試玩橘哥娛樂城拉霸機 (進度: ${state.spinsToday}/10 次)。`;
+      else taskEl.innerText = "✅ 今日任務已完成！可點擊結束今天。";
     } else if (state.day === 3) {
-      if (state.spinsToday < 5) {
-        taskEl.innerText = `📌 今日任務：試玩娛樂城體會高勝率 (已旋轉 ${state.spinsToday}/5 次)`;
-      } else {
-        taskEl.innerText = "✅ 今日任務已完成！今晚勝率極高，讓你嚐盡甜頭。";
-      }
+      if (state.spinsToday < 10) taskEl.innerText = `📌 今日待辦：繼續試玩娛樂城體會勝率 (進度: ${state.spinsToday}/10 次)。`;
+      else taskEl.innerText = "✅ 今日試玩已完成！可進入下一天。";
     } else if (state.day === 4) {
-      if (state.cash < 20000 && !state.loanInstalled) {
-        taskEl.innerText = "📌 今日任務：輸光資金且需繳房租 20,000 元！請查看阿偉傳來的借貸連結並下載App";
-      } else if (state.cash < 20000 && state.loanInstalled) {
-        taskEl.innerText = "📌 今日任務：進入「借貸錢莊」成功申貸，以支付 20,000 元房租";
-      } else {
-        taskEl.innerText = "✅ 房租開銷已湊齊並扣除，可進入下一天。";
-      }
+      if (!state.rentPaidDay4) taskEl.innerText = "📌 今日待辦：在「未來支付」App 繳納本月房租 NT$ 20,000。";
+      else taskEl.innerText = "✅ 房租已繳納完畢，可進入下一天。";
     } else {
-      taskEl.innerText = "📌 今日任務：關注財務狀況，完成當日開銷或適度理財。";
+      taskEl.innerText = "📌 今日待辦：查看各 App 訊息並處理當日財務狀態。";
     }
+  }
+
+  // 即時跳出 iOS 頂部通知
+  function triggerNotification(senderName, text, contactKey) {
+    playSound('msg');
+    let screen = document.getElementById("phone-screen");
+    let notif = document.createElement("div");
+    notif.className = "ios-notification";
+    notif.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#aaa; margin-bottom:4px;">
+        <span>💬 訊息</span><span>現在</span>
+      </div>
+      <div style="font-weight:bold; font-size:13px; color:#fff;">${senderName}</div>
+      <div style="font-size:12px; color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${text}</div>
+    `;
+    notif.onclick = () => {
+      notif.remove();
+      openChat(contactKey);
+    };
+    screen.appendChild(notif);
+    setTimeout(() => { if (notif.parentNode) notif.remove(); }, 4000);
   }
 
   function openApp(appId) {
@@ -188,15 +257,42 @@
       <span onclick="closeApp()" style="color:#007aff; cursor:pointer; font-weight:600;">關閉</span>
     </div><div class="app-body">`;
 
-    if (appId === 'messages') {
+    if (appId === 'futurePay') {
+      let totalLoan = state.loans.reduce((sum, l) => sum + l.amount, 0);
+      html += `
+        <div style="background:#1c1c1e; padding:16px; border-radius:14px; margin-bottom:12px; border:1px solid #333;">
+          <div style="font-size:12px; color:#aaa;">未來支付 - 當前可用現金餘額</div>
+          <div style="font-size:26px; font-weight:bold; color:${state.cash<0?'#ff3b30':'#34c759'}; margin-top:4px;">NT$ ${state.cash.toLocaleString()}</div>
+        </div>
+        <div style="background:#1c1c1e; padding:16px; border-radius:14px; margin-bottom:12px; border:1px solid #333;">
+          <div style="font-size:12px; color:#aaa;">應還高利貸總額</div>
+          <div style="font-size:24px; font-weight:bold; color:#ff3b30; margin-top:4px;">NT$ ${totalLoan.toLocaleString()}</div>
+        </div>
+        
+        <div style="background:#1c1c1e; padding:14px; border-radius:14px; border:1px solid #333;">
+          <div style="font-size:14px; font-weight:bold; margin-bottom:8px;">💳 未來支付待繳項目</div>
+          ${state.day >= 4 && !state.rentPaidDay4 ? `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #333;">
+              <div><div style="font-size:13px;">本月房租與水電</div><div style="font-size:11px; color:#aaa;">應繳 NT$ 20,000</div></div>
+              <button class="ios-btn danger" style="width:auto; padding:6px 12px; font-size:12px; margin:0;" onclick="payRent()">手動繳納</button>
+            </div>
+          ` : '<div style="font-size:12px; color:#888;">目前無待繳之生活費用帳單。</div>'}
+        </div>
+      `;
+    } else if (appId === 'messages') {
       html += `<div style="display:flex; flex-direction:column; gap:10px;">`;
       for (let key in state.contacts) {
         let c = state.contacts[key];
         let lastMsg = c.messages[c.messages.length - 1].text;
         html += `<div onclick="openChat('${key}')" style="background:#2c2c2e; padding:12px; border-radius:12px; display:flex; align-items:center; gap:12px; cursor:pointer;">
-          <div style="font-size:26px; background:#3a3a3c; width:44px; height:44px; border-radius:50%; display:flex; justify-content:center; align-items:center;">${c.avatar}</div>
+          <div style="font-size:26px; background:#3a3a3c; width:44px; height:44px; border-radius:50%; display:flex; justify-content:center; align-items:center; position:relative;">
+            ${c.avatar}
+          </div>
           <div style="flex:1; overflow:hidden;">
-            <div style="font-weight:600; font-size:14px;">${c.name}</div>
+            <div style="font-weight:600; font-size:14px; display:flex; justify-content:space-between;">
+              <span>${c.name}</span>
+              ${c.unread > 0 ? `<span style="font-size:10px; background:#ff3b30; color:#fff; padding:1px 6px; border-radius:10px;">未讀 ${c.unread}</span>` : ''}
+            </div>
             <div style="font-size:12px; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lastMsg}</div>
           </div>
         </div>`;
@@ -206,38 +302,30 @@
       html += `
         <div style="text-align:center;">
           <h2 style="color:#ff9500; margin-top:0;">🎲 橘哥娛樂城 🎲</h2>
-          <p style="font-size:12px; color:#aaa;">當前現金：<b style="color:#34c759;">NT$ ${state.cash.toLocaleString()}</b></p>
-          <div style="margin:20px 0;">
-            <span class="slot-reel" id="r1">🍒</span>
-            <span class="slot-reel" id="r2">🍋</span>
-            <span class="slot-reel" id="r3">💎</span>
+          <p style="font-size:12px; color:#aaa;">即時帳戶餘額：<b id="casino-live-cash" style="color:#34c759;">NT$ ${state.cash.toLocaleString()}</b></p>
+          
+          <div class="slot-machine-box">
+            <div class="slot-reels-container">
+              <div class="slot-reel"><div class="slot-reel-inner" id="reel-1">🎰</div></div>
+              <div class="slot-reel"><div class="slot-reel-inner" id="reel-2">🎰</div></div>
+              <div class="slot-reel"><div class="slot-reel-inner" id="reel-3">🎰</div></div>
+            </div>
+            <div id="gamble-res" style="font-weight:bold; font-size:14px; min-height:20px; color:#ff9500;"></div>
           </div>
-          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:12px;">
-            <button class="ios-btn" style="margin:0;" onclick="playSlot(1000)">下注 1,000</button>
-            <button class="ios-btn" style="margin:0;" onclick="playSlot(5000)">下注 5,000</button>
-            <button class="ios-btn" style="margin:0;" onclick="playSlot(10000)">下注 10,000</button>
-            <button class="ios-btn" style="margin:0;" onclick="playSlot(50000)">下注 50,000</button>
+
+          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:10px;">
+            <button class="ios-btn" style="margin:0;" onclick="playSlotAnimation(1000)">下注 1,000</button>
+            <button class="ios-btn" style="margin:0;" onclick="playSlotAnimation(5000)">下注 5,000</button>
+            <button class="ios-btn" style="margin:0;" onclick="playSlotAnimation(10000)">下注 10,000</button>
+            <button class="ios-btn" style="margin:0;" onclick="playSlotAnimation(50000)">下注 50,000</button>
           </div>
-          ${state.highStakeUnlocked ? `<button class="ios-btn danger" onclick="playSlot(100000)" style="font-size:16px; background:#ff2d55;">🔥 專屬VIP高額賭注：一注 100,000</button>` : ''}
-          <button class="ios-btn danger" onclick="playSlot(state.cash)">🔥 梭哈 (All-in)</button>
-          <div id="gamble-res" style="font-weight:bold; margin-top:12px; font-size:14px;"></div>
-        </div>
-      `;
-    } else if (appId === 'accounting') {
-      let totalLoan = state.loans.reduce((sum, l) => sum + l.amount, 0);
-      html += `
-        <div style="background:#2c2c2e; padding:16px; border-radius:12px; margin-bottom:12px;">
-          <div style="font-size:12px; color:#aaa;">現金總額</div>
-          <div style="font-size:24px; font-weight:bold; color:${state.cash<0?'#ff3b30':'#34c759'};">NT$ ${state.cash.toLocaleString()}</div>
-        </div>
-        <div style="background:#2c2c2e; padding:16px; border-radius:12px; margin-bottom:12px;">
-          <div style="font-size:12px; color:#aaa;">高利貸總負債</div>
-          <div style="font-size:24px; font-weight:bold; color:#ff3b30;">NT$ ${totalLoan.toLocaleString()}</div>
+          ${state.highStakeUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(100000)" style="font-size:15px; background:#ff2d55;">🔥 VIP高額賭注：一注 100,000</button>` : ''}
+          <button class="ios-btn danger" onclick="playSlotAnimation(state.cash)">🔥 梭哈 (All-in)</button>
         </div>
       `;
     } else if (appId === 'loan') {
       html += `
-        <p style="font-size:12px; color:#aaa; margin-top:0;">地下融資貸款平台（每日限借一家）：</p>
+        <p style="font-size:12px; color:#aaa; margin-top:0;">地下融資借貸平台（每日限借一家）：</p>
         <div style="background:#2c2c2e; padding:12px; border-radius:12px; margin-bottom:10px;">
           <b>橘速貸 (日息 10%)</b>
           <div style="font-size:11px; color:#aaa; margin:4px 0;">快速撥款 NT$ 30,000</div>
@@ -251,13 +339,13 @@
       `;
     } else if (appId === 'ig') {
       html += `
-        <div style="background:#1a1a1a; border-radius:12px; padding:10px; border:1px solid #333; margin-bottom:12px;">
+        <div style="background:#1a1a1a; border-radius:12px; padding:10px; border:1px solid #333;">
           <div style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:bold; margin-bottom:8px;">
             <div style="width:28px; height:28px; border-radius:50%; background:#ff9500; display:flex; justify-content:center; align-items:center;">👑</div>
             <span>橘哥官方社群 @boss_orange</span>
           </div>
-          <div style="height:150px; background:#333; border-radius:8px; display:flex; justify-content:center; align-items:center; font-size:36px;">🏎️💸</div>
-          <p style="font-size:12px; color:#ddd; margin-top:8px;">今天帶學員在【橘哥娛樂城】狂賺 50 萬！別再領 3 萬死薪水了！想翻身的私訊我！🔥</p>
+          <div style="height:140px; background:#333; border-radius:8px; display:flex; justify-content:center; align-items:center; font-size:36px;">🏎️💸</div>
+          <p style="font-size:12px; color:#ddd; margin-top:8px;">今天帶學員在【橘哥娛樂城】爽賺 50 萬！別再領死薪水了，想翻身的速私！🔥</p>
         </div>
       `;
     }
@@ -268,7 +356,7 @@
   }
 
   function getAppTitle(id) {
-    let map = { accounting: '📊 記帳小幫手', messages: '💬 訊息', ig: '📸 Instagram', casino: '🎲 橘哥娛樂城', loan: '💳 借貸錢莊' };
+    let map = { futurePay: '💳 未來支付', messages: '💬 訊息', ig: '📸 Instagram', casino: '🎲 橘哥娛樂城', loan: '💰 借貸錢莊' };
     return map[id] || 'App';
   }
 
@@ -277,8 +365,12 @@
     if (v) v.remove();
   }
 
+  // 閱讀訊息與歸零未讀數
   function openChat(contactKey) {
     let c = state.contacts[contactKey];
+    c.unread = 0; // 已讀消掉
+    updateUI();
+
     let screen = document.getElementById("phone-screen");
     let view = document.createElement("div");
     view.className = "app-view";
@@ -292,15 +384,18 @@
     `;
     c.messages.forEach(m => {
       let type = m.sender === 'user' ? 'outgoing' : 'incoming';
-      html += `<div class="chat-bubble ${type}">${m.text}</div>`;
+      html += `<div class="chat-bubble ${type}">
+        <div>${m.text}</div>
+        ${m.voice ? `<div class="voice-msg-btn" onclick="playVoiceSynth('${m.voice}')">🔊 語音訊息 (點擊播放)</div>` : ''}
+      </div>`;
       if (m.isCasinoLink) {
         html += `<div class="chat-bubble incoming link-box" onclick="installCasino()">
-          <b>🎰 點擊下載「橘哥娛樂城 App」</b><br><span style="font-size:11px; opacity:0.8;">好友阿偉分享的專屬邀請連結</span>
+          <b>🎰 點擊下載「橘哥娛樂城 App」</b><br><span style="font-size:11px; opacity:0.8;">阿偉發來的專屬邀請連結</span>
         </div>`;
       }
       if (m.isLoanLink) {
         html += `<div class="chat-bubble incoming link-box" onclick="installLoan()">
-          <b>💳 點擊下載「借貸錢莊 App」</b><br><span style="font-size:11px; opacity:0.8;">阿偉推薦的急用免審核借貸管道</span>
+          <b>💰 點擊下載「借貸錢莊 App」</b><br><span style="font-size:11px; opacity:0.8;">阿偉推薦的快速借貸管道</span>
         </div>`;
       }
     });
@@ -309,12 +404,22 @@
     screen.appendChild(view);
   }
 
-  function installCasino() {
-    if (state.casinoInstalled) {
-      alert("您已經安裝過橘哥娛樂城了！可以直接在桌面點擊開啟。");
+  function payRent() {
+    if (state.cash < 20000) {
+      alert("【餘額不足】未來支付帳戶現金不足 NT$ 20,000，無法支付房租！");
       return;
     }
-    alert("📲 正在從網頁安全下載「橘哥娛樂城 App」... 安裝完成！已新增至手機桌面。");
+    state.cash -= 20000;
+    state.rentPaidDay4 = true;
+    alert("✅ 成功透過「未來支付」繳納房租與水電 NT$ 20,000！");
+    closeApp();
+    openApp('futurePay');
+    updateUI();
+  }
+
+  function installCasino() {
+    if (state.casinoInstalled) return;
+    alert("📲 「橘哥娛樂城 App」安裝完成！已新增至手機桌面。");
     state.casinoInstalled = true;
     document.getElementById("casino-app-icon").style.display = "flex";
     closeApp();
@@ -322,96 +427,102 @@
   }
 
   function installLoan() {
-    if (state.loanInstalled) {
-      alert("您已經安裝過借貸錢莊了！可以直接在桌面點擊開啟。");
-      return;
-    }
-    alert("📲 正在下載「借貸錢莊 App」... 安裝完成！已新增至手機桌面。");
+    if (state.loanInstalled) return;
+    alert("📲 「借貸錢莊 App」安裝完成！已新增至手機桌面。");
     state.loanInstalled = true;
     document.getElementById("loan-app-icon").style.display = "flex";
     closeApp();
     updateUI();
   }
 
-  function playSlot(amount) {
+  // 拉霸機滾輪動畫與賠率
+  function playSlotAnimation(amount) {
     if (amount <= 0 || state.cash < amount) {
       alert("現金不足！");
       return;
     }
 
-    let r1 = document.getElementById("r1");
-    let r2 = document.getElementById("r2");
-    let r3 = document.getElementById("r3");
-    r1.className = "slot-reel slot-spinning";
-    r2.className = "slot-reel slot-spinning";
-    r3.className = "slot-reel slot-spinning";
+    let r1 = document.getElementById("reel-1");
+    let r2 = document.getElementById("reel-2");
+    let r3 = document.getElementById("reel-3");
+    let resEl = document.getElementById("gamble-res");
+
+    r1.className = "slot-reel-inner spinning";
+    r2.className = "slot-reel-inner spinning";
+    r3.className = "slot-reel-inner spinning";
+    resEl.innerText = "旋轉中...";
+    playSound('spin');
 
     setTimeout(() => {
       let isWin = false;
-      let resEl = document.getElementById("gamble-res");
-      let icons = ["🍒", "🍋", "🔔", "💎", "7️⃣"];
-
-      // 第 4 天專屬陷阱控制
-      if (state.day === 4) {
-        state.day4Spins++;
-        if (state.day4Spins <= 2) {
-          isWin = true; // 前2轉必贏
-        } else if (state.day4Spins === 3 && !state.highStakeUnlocked) {
+      
+      // 第 2 天與第 3 天：轉三次贏，轉一次輸 (Pattern 循環)
+      if (state.day === 2 || state.day === 3) {
+        isWin = day23Pattern[state.spinPatternIdx % day23Pattern.length];
+        state.spinPatternIdx++;
+      } else if (state.day === 4) {
+        if (state.spinsToday < 2) isWin = true; // 前 2 轉必贏
+        else if (state.spinsToday === 2 && !state.highStakeUnlocked) {
           state.highStakeUnlocked = true;
-          alert("🎉 恭喜連勝！系統自動為您解鎖【VIP高額賭注區】：可選擇一注 100,000！大賺特賺的機會來了！");
-          closeApp();
-          openApp('casino');
-          return;
+          alert("🎉 恭喜連勝！系統已自動為您解鎖【VIP高額賭注區】：可押注 100,000！");
+          closeApp(); openApp('casino'); return;
         } else {
-          isWin = false; // 後續必輸（特別是 10萬一注瞬間賠光）
+          isWin = false; // 後續必輸
         }
       } else {
-        isWin = Math.random() < state.winRate;
+        isWin = Math.random() < 0.2; // 隨天數失控
       }
+
+      r1.className = "slot-reel-inner";
+      r2.className = "slot-reel-inner";
+      r3.className = "slot-reel-inner";
 
       if (isWin) {
         r1.innerText = "7️⃣"; r2.innerText = "7️⃣"; r3.innerText = "7️⃣";
         let win = Math.floor(amount * 1.5);
         state.cash += win;
         resEl.style.color = "#34c759";
-        resEl.innerText = `🎉 【大獎 777！】贏得 NT$ ${win.toLocaleString()}！`;
+        resEl.innerText = `🎉 中大獎！贏得 NT$ ${win.toLocaleString()}`;
+        playSound('win');
       } else {
-        r1.innerText = icons[Math.floor(Math.random()*icons.length)];
-        r2.innerText = icons[Math.floor(Math.random()*icons.length)];
-        r3.innerText = icons[Math.floor(Math.random()*icons.length)];
+        r1.innerText = "🍒"; r2.innerText = "💎"; r3.innerText = "7️⃣";
         state.cash -= amount;
         resEl.style.color = "#ff3b30";
-        resEl.innerText = `😢 【慘輸】慘敗！損失 NT$ ${amount.toLocaleString()}！`;
+        resEl.innerText = `😢 未中獎，損失 NT$ ${amount.toLocaleString()}`;
+        playSound('lose');
         document.getElementById("phone-frame").classList.add("shake");
         setTimeout(() => document.getElementById("phone-frame").classList.remove("shake"), 400);
       }
-      r1.className = "slot-reel"; r2.className = "slot-reel"; r3.className = "slot-reel";
-      
+
       state.spinsToday++;
+      // 即時更新金額
+      document.getElementById("casino-live-cash").innerText = `NT$ ${state.cash.toLocaleString()}`;
       updateUI();
 
-      // 第 4 天輸光觸發阿偉推薦借貸訊息
+      // 第 4 天輸光觸發阿偉推薦貸款
       if (state.day === 4 && state.cash < 20000 && !state.loanInstalled) {
         setTimeout(() => {
-          alert("📲 收到來自【好友阿偉】的新訊息！");
+          state.contacts.friend.unread++;
           state.contacts.friend.messages.push({
             sender: "friend",
-            text: "兄弟，我剛看盤口你好像賠光了？沒事啦我也常遇到！我都在這個『借貸錢莊 App』拿週轉金，免審核三秒到帳，你快去逛逛借點錢還房租！",
+            text: "兄弟，看你輸光了？沒事啦！我都在這個『借貸錢莊 App』拿週轉金，免審核三秒到帳，你快借點錢還房租！",
             isLoanLink: true
           });
+          triggerNotification("好友阿偉", "兄弟，看你輸光了？我都在這個『借貸錢莊』拿週轉金...", "friend");
           updateUI();
-        }, 800);
+        }, 600);
       }
-    }, 400);
+
+    }, 800);
   }
 
   function requestLoan(name, amount, rate) {
     if (state.hasBorrowedToday) {
-      alert("一天內限制只能向一家融資機構申貸！");
+      alert("一天內限制只能向一家機構申貸！");
       return;
     }
-    if (confirm(`【實名認證】確定向「${name}」申貸 NT$ ${amount.toLocaleString()}？需要掃描臉部`)) {
-      alert("✅ 臉部識別成功！資金已入帳。");
+    if (confirm(`【實名認證】確定向「${name}」申貸 NT$ ${amount.toLocaleString()}？需要進行 AI 拍臉驗證`)) {
+      alert("✅ 臉部識別成功！資金已直接匯入您的「未來支付」帳戶。");
       state.loans.push({ name: name, amount: amount, rate: rate });
       state.cash += amount;
       state.hasBorrowedToday = true;
@@ -420,33 +531,26 @@
     }
   }
 
+  // 進入下一天 (含過場動畫)
   function nextDay() {
-    // 檢查任務條件
     if (state.day === 2) {
-      if (!state.casinoInstalled) {
-        alert("【今日任務未完成】請查看阿偉的訊息並下載「橘哥娛樂城」！");
-        return;
-      }
-      if (state.spinsToday < 10) {
-        alert(`【今日任務未完成】請先在娛樂城試玩拉霸機！進度 (${state.spinsToday}/10 次)`);
-        return;
-      }
+      if (!state.casinoInstalled) { alert("【今日任務未完成】請先查看阿偉訊息並下載「橘哥娛樂城」！"); return; }
+      if (state.spinsToday < 10) { alert(`【今日任務未完成】請在娛樂城試玩拉霸機！目前進度 (${state.spinsToday}/10 次)`); return; }
     }
-
-    if (state.day === 3 && state.spinsToday < 5) {
-      alert(`【今日任務未完成】請繼續在娛樂城玩拉霸機體驗超高勝率！進度 (${state.spinsToday}/5 次)`);
+    if (state.day === 3 && state.spinsToday < 10) {
+      alert(`【今日任務未完成】請繼續在娛樂城試玩！目前進度 (${state.spinsToday}/10 次)`); return;
+    }
+    if (state.day === 4 && !state.rentPaidDay4) {
+      alert("【財務未完成】今天必須在「未來支付」繳納房租 NT$ 20,000！餘額不足請向阿偉推薦的錢莊申貸。");
       return;
     }
 
-    if (state.day === 4) {
-      if (state.cash < 20000) {
-        alert("【財務危機】今天必須繳納房租 20,000 元！您目前的現金不足，請透過阿偉推薦的「借貸錢莊」申貸籌錢！");
-        return;
-      } else {
-        state.cash -= 20000;
-        alert("已成功匯款支付本月房租 NT$ 20,000。");
-      }
-    }
+    // 全螢幕天數過場動畫
+    let overlay = document.createElement("div");
+    overlay.className = "day-transition-overlay";
+    overlay.innerHTML = `<h1 style="font-size:32px; color:#fff; font-weight:300;">第 ${state.day + 1} 天</h1>`;
+    document.getElementById("phone-screen").appendChild(overlay);
+    setTimeout(() => overlay.remove(), 1800);
 
     state.day++;
     state.spinsToday = 0;
@@ -455,31 +559,30 @@
     // 計算高利貸利滾利
     state.loans.forEach(l => l.amount = Math.floor(l.amount * (1 + l.rate)));
 
-    // 勝率邏輯
-    if (state.day === 3) state.winRate = 0.95; // 第3天極高勝率
-    else if (state.day <= 10) state.winRate = 0.6; // 5-10天 6成勝率
-    else state.winRate = Math.max(0.08, 0.7 - (state.day * 0.025));
-
-    // 自動新增第 2 天好友連結訊息
+    // 動態新增訊息與通知
     if (state.day === 2) {
+      state.contacts.friend.unread++;
       state.contacts.friend.messages.push({
         sender: "friend",
-        text: "欸兄弟！我最近在『橘哥娛樂城』賺超多錢！新手運超狂隨便押隨便贏，連結發你了你快點載來玩看看！",
+        text: "欸兄弟！我最近在『橘哥娛樂城』賺超多錢！連結發你了你快點載來玩看看！",
         isCasinoLink: true
       });
+      triggerNotification("好友阿偉", "欸兄弟！我最近在『橘哥娛樂城』賺超多錢！...", "friend");
     }
 
-    // 更新老婆與小孩每日訊息
-    if (wifeMessages[state.day]) {
-      state.contacts.wife.messages.push({ sender: "wife", text: wifeMessages[state.day] });
-    }
-    if (childMessages[state.day]) {
-      state.contacts.child.messages.push({ sender: "child", text: childMessages[state.day] });
+    if (state.day === 4) {
+      state.contacts.wife.unread++;
+      state.contacts.wife.messages.push({
+        sender: "wife",
+        text: "老公，房東剛剛打來催房租 20,000 元了，記得在「未來支付」App 裡面繳掉喔！",
+        voice: "老公，房東剛剛打來催房租兩萬元了，記得繳掉喔！"
+      });
+      triggerNotification("老婆", "老公，房東剛剛打來催房租 20,000 元了...", "wife");
     }
 
-    // 解鎖催收人員
     if (state.day === 10) {
-      state.contacts.collector = { name: "催收專員-虎哥", avatar: "🕶️", messages: [{ sender: "collector", text: "兄弟，本金利息該結一下了吧？別逼我們上門找你家人討論喔。" }] };
+      state.contacts.collector = { name: "催收專員-虎哥", avatar: "🕶️", unread: 1, messages: [{ sender: "collector", text: "兄弟，本金利息該結一下了吧？別逼我們上門討論喔。" }] };
+      triggerNotification("催收專員-虎哥", "兄弟，本金利息該結一下了吧？", "collector");
     }
 
     if (state.day > state.maxDays) {
@@ -487,13 +590,6 @@
       location.reload();
       return;
     }
-
-    let storyTitles = {
-      1: "第 1 天：平靜的開始", 2: "第 2 天：好友的誘惑", 3: "第 3 天：狂贏的甜頭", 4: "第 4 天：房租與陷阱暴雷",
-      5: "第 5 天：深陷高利貸", 9: "第 9 天：家庭爭吵", 14: "第 14 天：暴力討債", 21: "第 21 天：妻離子散", 30: "第 30 天：大結局"
-    };
-    document.getElementById("story-title").innerText = storyTitles[state.day] || `第 ${state.day} 天：沉淪之中`;
-    document.getElementById("story-desc").innerText = `請查看今日家人與好友傳來的訊息，注意財務狀況與開銷。`;
 
     updateUI();
   }
