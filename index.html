@@ -19,13 +19,16 @@
     .app-label { font-size: 11px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
     .badge { position: absolute; top: -2px; right: 8px; background: #ff3b30; color: white; border-radius: 10px; font-size: 10px; padding: 2px 6px; font-weight: bold; display: none; }
     
-    /* 即時 iOS 通知彈窗 */
-    .ios-notification { position: absolute; top: 50px; left: 12px; right: 12px; background: rgba(40,40,40,0.95); backdrop-filter: blur(20px); border-radius: 16px; padding: 12px 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); z-index: 200; animation: slideDown 0.4s ease-out; cursor: pointer; }
+    /* Line 風格通知與彈窗 */
+    .ios-notification { position: absolute; top: 50px; left: 12px; right: 12px; background: rgba(30,30,30,0.95); backdrop-filter: blur(20px); border-radius: 16px; padding: 12px 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid rgba(0,255,100,0.3); z-index: 200; animation: slideDown 0.4s ease-out; cursor: pointer; }
     @keyframes slideDown { from { transform: translateY(-70px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* 中央多巴胺支付成功彈窗 */
+    /* 多巴胺支付成功彈窗 */
     .success-popup { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(20,20,20,0.95); border: 2px solid #34c759; border-radius: 20px; padding: 24px; text-align: center; z-index: 500; box-shadow: 0 15px 35px rgba(0,0,0,0.8); animation: popIn 0.3s ease-out; }
     @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+    /* 臉部審核彈窗 */
+    .face-verify-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 400; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; }
 
     .app-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 50; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -48,13 +51,12 @@
     /* 聊天室與語音 */
     .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin: 6px 0; font-size: 13px; line-height: 1.4; word-break: break-all; position: relative; }
     .chat-bubble.incoming { background: #262628; color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
-    .chat-bubble.outgoing { background: #007aff; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-bubble.outgoing { background: #00b900; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
     .chat-bubble.link-box { background: #1e3a5f; border: 1px solid #007aff; cursor: pointer; }
-    .voice-msg-btn { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; cursor: pointer; width: fit-content; margin-top: 4px; }
+    .voice-msg-btn { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; cursor: pointer; width: fit-content; margin-top: 6px; font-size: 12px; color: #00ffcc; border: 1px solid rgba(0,255,204,0.3); }
 
     /* 過場天數牆 */
-    .day-transition-overlay { position: absolute; top: 0; left: 0; width: 100%
-, height: 100%; background: #000; z-index: 300; display: flex; flex-direction: column; justify-content: center; align-items: center; animation: fadeInOut 1.8s ease-in-out forwards; }
+    .day-transition-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 300; display: flex; flex-direction: column; justify-content: center; align-items: center; animation: fadeInOut 1.8s ease-in-out forwards; }
     @keyframes fadeInOut { 0% { opacity: 0; } 30% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
     
     .shake { animation: shakeAnim 0.4s ease-in-out; }
@@ -88,8 +90,8 @@
           <span class="app-label">未來支付</span>
         </div>
         <div class="app-icon-container" onclick="openApp('messages')">
-          <div class="app-icon" style="background: linear-gradient(135deg, #34c759, #11998e);">💬</div>
-          <span class="app-label">訊息</span>
+          <div class="app-icon" style="background: linear-gradient(135deg, #00b900, #009900);">💬</div>
+          <span class="app-label">Line 訊息</span>
           <div class="badge" id="total-msg-badge">0</div>
         </div>
         <div class="app-icon-container" onclick="openApp('ig')">
@@ -106,7 +108,7 @@
         </div>
       </div>
 
-      <!-- 底部日常任務卡片 -->
+      <!-- 底部日常任務卡片 (待辦事項精確倒數) -->
       <div style="background: rgba(0,0,0,0.6); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.15); margin-top: auto;">
         <h3 id="story-title" style="margin:0 0 4px 0; color:#00ffcc; font-size:15px;">第 1 天</h3>
         <div id="day-task-status" style="font-size:11px; color:#ff9500; margin-bottom:6px; line-height:1.3;">📌 待辦事項：處理今日帳單開銷。</div>
@@ -118,7 +120,7 @@
 </div>
 
 <script>
-  // 音效系統 (Web Audio API)
+  // 音效系統 (Web Audio API 模擬 Line 通知與多巴胺音效)
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   let audioCtxInstance = null;
   function playSound(type) {
@@ -130,12 +132,13 @@
       osc.connect(gain);
       gain.connect(audioCtxInstance.destination);
 
-      if (type === 'msg') {
-        osc.frequency.setValueAtTime(587.33, audioCtxInstance.currentTime); 
-        osc.frequency.setValueAtTime(880, audioCtxInstance.currentTime + 0.1); 
+      if (type === 'line') {
+        // Line 經典雙響通知音效
+        osc.frequency.setValueAtTime(1046.5, audioCtxInstance.currentTime); // C6
+        osc.frequency.setValueAtTime(1318.5, audioCtxInstance.currentTime + 0.1); // E6
         gain.gain.setValueAtTime(0.2, audioCtxInstance.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.3);
-        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.3);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.25);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.25);
       } else if (type === 'spin') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(150, audioCtxInstance.currentTime);
@@ -151,12 +154,11 @@
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.5);
         osc.start(); osc.stop(audioCtxInstance.currentTime + 0.5);
       } else if (type === 'success-pay') {
-        // 多巴胺支付成功高音和弦
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, audioCtxInstance.currentTime); // C5
-        osc.frequency.setValueAtTime(659.25, audioCtxInstance.currentTime + 0.08); // E5
-        osc.frequency.setValueAtTime(783.99, audioCtxInstance.currentTime + 0.16); // G5
-        osc.frequency.setValueAtTime(1046.50, audioCtxInstance.currentTime + 0.24); // C6
+        osc.frequency.setValueAtTime(523.25, audioCtxInstance.currentTime);
+        osc.frequency.setValueAtTime(659.25, audioCtxInstance.currentTime + 0.08);
+        osc.frequency.setValueAtTime(783.99, audioCtxInstance.currentTime + 0.16);
+        osc.frequency.setValueAtTime(1046.50, audioCtxInstance.currentTime + 0.24);
         gain.gain.setValueAtTime(0.3, audioCtxInstance.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.6);
         osc.start(); osc.stop(audioCtxInstance.currentTime + 0.6);
@@ -181,7 +183,7 @@
   }
 
   function playVoiceSynth(text) {
-    playSound('msg');
+    playSound('line');
     if ('speechSynthesis' in window) {
       let utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'zh-TW';
@@ -190,12 +192,12 @@
     }
   }
 
-  // 每日生活開銷與 30 天 AI 家庭對話劇本庫
+  // 30 天豐富日常與對話語音庫
   const dailyConfig = {
     1: { bill: { name: "家庭伙食與日常用品費", amount: 3000 }, wife: "老公，今天晚餐做了你愛吃的糖醋排骨，快回來吃喔！", child: "爸爸今天下班會買科學麵給我嗎？" },
     2: { bill: { name: "水電與瓦斯基本費", amount: 2500 }, wife: "老公，阿偉好像一直傳訊息給你，你們最近在聊什麼投資啊？感覺怪怪的。", child: "爸爸，學校老師說要繳班費 500 元喔！" },
     3: { bill: { name: "小孩幼兒園才藝班學費", amount: 8000 }, wife: "才藝班學費帳單來了，這幾天開銷好大，你薪水夠用嗎？", child: "爸爸陪我玩積木！" },
-    4: { bill: { name: "本月房屋租金與水電費", amount: 20000 }, wife: "房東剛剛狂打電話催房租 2 万了！你帳戶到底還有沒有錢啊？", child: "爸爸肚子餓..." },
+    4: { bill: { name: "本月房屋租金與水電費", amount: 20000 }, wife: "房東剛剛狂打電話催房租 2 萬了！你帳戶到底還有沒有錢啊？", child: "爸爸肚子餓..." },
     5: { bill: { name: "機車定期保養與油錢", amount: 2000 }, wife: "老公，我看你最近一直滑手機按那個娛樂城，拜託你穩一點，別走歪路。", child: "爸爸今天可以帶我去公園溜滑梯嗎？" },
     6: { bill: { name: "父母親慢性病藥品與保健費", amount: 6000 }, wife: "媽的慢性病藥吃完了，拿藥要 6 千塊，你等等轉給我。", child: "爸爸，我的色鉛筆用完了啦。" },
     7: { bill: { name: "全家生活雜貨與採買", amount: 4500 }, wife: "冰箱空了，我帶小孩去全聯買菜，花了一點錢，你下班順便洗碗喔。", child: "爸爸我今天考試拿 100 分喔！" },
@@ -205,7 +207,7 @@
     11: { bill: { name: "小孩學校校外教學與餐費", amount: 4000 }, wife: "校外教學要繳費了，你上次說的投資到底賺錢了沒？怎麼家裡存摺越來越少？", child: "同學都有去校外教學，我也想去！" },
     12: { bill: { name: "汽車停車費與雜支", amount: 3000 }, wife: "停車費單子一堆沒繳，你快處理一下，別放著變罰單。", child: "爸爸今天晚餐吃水餃嗎？" },
     13: { bill: { name: "家庭聚餐與親友紅包", amount: 6000 }, wife: "阿姨生日我們要包紅包 6 千，你這個月到底透支多少了？", child: "我想吃披薩啦！" },
-    14: { bill: { name: "日常水電預備金", amount: 2500 }, wife: "老公，我今天刷存摺發現餘額見底了...你老實跟我說，錢花到哪去了？", child: "爸爸妳怎麼哭了？（看著媽媽生氣）" },
+    14: { bill: { name: "日常水電預備金", amount: 2500 }, wife: "老公，我今天刷存摺發現餘額見底了...你老實跟我說，錢花到哪去了？", child: "爸爸妳怎麼哭了？" },
     15: { bill: { name: "房屋貸款分期利息", amount: 15000 }, wife: "房貸利息被扣掉後，戶頭直接紅字了！你今天必須給我一個交代！", child: "爸爸媽媽不要吵架好不好..." },
     16: { bill: { name: "家用緊急預備金", amount: 4000 }, wife: "我今天回娘家被我媽唸了一頓，說嫁給你過得這麼辛苦，我心裡真的很累。", child: "媽媽在房間偷偷哭，爸爸你去安慰她啦。" },
     17: { bill: { name: "日常伙食開銷", amount: 3000 }, wife: "家裡的米快吃完了，我跟鄰居借了一點現金撐著，你到底在搞什麼鬼？", child: "爸爸我想喝多多。" },
@@ -236,7 +238,7 @@
     contacts: {
       wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️", voice: "老公，今天發薪水辛苦啦，晚上記得早點回家吃飯喔！" }] },
       child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？", voice: "爸爸，我今天考了95分喔！" }] },
-      friend: { name: "好友阿偉", avatar: "🧔", unread: 0, messages: [{ sender: "friend", text: "兄弟, 最近過得怎樣? 有空出來喝一杯啊!" }] }
+      friend: { name: "好友阿偉", avatar: "🧔", unread: 0, messages: [{ sender: "friend", text: "兄弟，最近過得怎樣？有空出來喝一杯啊！", voice: "兄弟，最近過得怎樣？有空出來喝一杯啊！" }] }
     }
   };
 
@@ -265,7 +267,7 @@
           taskEl.innerText = "📌 待辦事項：處理今日帳單開銷。";
         } else {
           let spinsLeft = Math.max(0, 10 - state.spinsToday);
-          taskEl.innerText = `📌 待辦事項：轉輪盤十次 (${spinsLeft}/10) | ${billStatus}`;
+          taskEl.innerText = `📌 待轉輪盤目標是10次，目前已打 ${state.spinsToday} 次 (剩餘 ${spinsLeft} 次) | ${billStatus}`;
         }
       }
     } catch(e) {
@@ -274,14 +276,14 @@
   }
 
   function triggerNotification(senderName, text, contactKey) {
-    playSound('msg');
+    playSound('line');
     let screen = document.getElementById("phone-screen");
     if (!screen) return;
     let notif = document.createElement("div");
     notif.className = "ios-notification";
     notif.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#aaa; margin-bottom:4px;">
-        <span>💬 訊息</span><span>現在</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#00b900; margin-bottom:2px;">
+        <span>Line 訊息</span><span>現在</span>
       </div>
       <div style="font-weight:bold; font-size:13px; color:#fff;">${senderName}</div>
       <div style="font-size:12px; color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${text}</div>
@@ -306,7 +308,7 @@
     
     let html = `<div class="app-nav-bar">
       <span style="font-weight:600; font-size:15px;">${getAppTitle(appId)}</span>
-      <span onclick="closeApp()" style="color:#007aff; cursor:pointer; font-weight:600;">關閉</span>
+      <span onclick="closeApp()" style="color:#00b900; cursor:pointer; font-weight:600;">關閉</span>
     </div><div class="app-body">`;
 
     if (appId === 'futurePay') {
@@ -316,11 +318,19 @@
           <div style="font-size:11px; color:#aaa;">未來支付 - 當前可用現金餘額</div>
           <div style="font-size:24px; font-weight:bold; color:${state.cash<0?'#ff3b30':'#34c759'}; margin-top:2px;">NT$ ${state.cash.toLocaleString()}</div>
         </div>
-        <div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">
-          <div style="font-size:11px; color:#aaa;">地下高利貸累積總欠款</div>
-          <div style="font-size:22px; font-weight:bold; color:#ff3b30; margin-top:2px;">NT$ ${totalLoan.toLocaleString()}</div>
-        </div>
-        
+      `;
+
+      // 只有在開始有借款之後才顯示地下高利貸累積總欠款
+      if (state.loans.length > 0) {
+        html += `
+          <div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">
+            <div style="font-size:11px; color:#aaa;">地下高利貸累積總欠款</div>
+            <div style="font-size:22px; font-weight:bold; color:#ff3b30; margin-top:2px;">NT$ ${totalLoan.toLocaleString()}</div>
+          </div>
+        `;
+      }
+
+      html += `
         <div style="background:#1c1c1e; padding:14px; border-radius:14px; border:1px solid #333;">
           <div style="font-size:13px; font-weight:bold; margin-bottom:6px;">💳 今日必須繳納項目</div>
           ${!state.currentBill.paid ? `
@@ -343,7 +353,7 @@
           <div style="flex:1; overflow:hidden;">
             <div style="font-weight:600; font-size:14px; display:flex; justify-content:space-between;">
               <span>${c.name}</span>
-              ${c.unread > 0 ? `<span style="font-size:10px; background:#ff3b30; color:#fff; padding:1px 6px; border-radius:10px;">未讀 ${c.unread}</span>` : ''}
+              ${c.unread > 0 ? `<span style="font-size:10px; background:#00b900; color:#fff; padding:1px 6px; border-radius:10px;">未讀 ${c.unread}</span>` : ''}
             </div>
             <div style="font-size:12px; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lastMsg}</div>
           </div>
@@ -351,13 +361,13 @@
       }
       html += `</div>`;
     } else if (appId === 'casino') {
-      let canHighStake = state.day >= 5; 
+      let canHighStake = state.day >= 4; // 第四天開放 10,000 與 50,000
       let allInUnlocked = state.day >= 10; 
-      let spinsLeft = Math.max(0, 10 - state.spinsToday);
 
       html += `
         <div style="text-align:center;">
-          <h2 style="color:#ff9500; margin-top:0; font-size:18px;">🎲 橘哥娛樂城 (剩餘轉動: ${spinsLeft}/10)</h2>
+          <div style="font-size:11px; color:#aaa; margin-bottom:2px;">今日目標：轉輪盤</div>
+          <h2 style="color:#ff9500; margin-top:0; font-size:16px;">🎲 橘哥娛樂城</h2>
           <p style="font-size:11px; color:#aaa; margin:4px 0;">即時餘額：<b id="casino-live-cash" style="color:#34c759;">NT$ ${state.cash.toLocaleString()}</b></p>
           
           <div class="slot-machine-box">
@@ -375,10 +385,10 @@
             ${canHighStake ? `
               <button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(10000)">下注 10,000</button>
               <button class="ios-btn" style="margin:0; padding:10px; font-size:13px;" onclick="playSlotAnimation(50000)">下注 50,000</button>
-            ` : `<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:6px; border-radius:6px;">🔒 下注 1萬/5萬額度：需至第 5 天解鎖</div>`}
+            ` : `<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:6px; border-radius:6px;">🔒 下注 1萬/5萬額度：需至第 4 天解鎖</div>`}
           </div>
 
-          ${allInUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:14px; background:#ff2d55; padding:10px;">🔥 梭哈 (All-in)</button>` : `<div style="font-size:10px; color:#aaa; background:#222; padding:8px; border-radius:8px; border:1px dashed #444;">🔒 鎖卡鍵：需達成遊戲天數 10 天才開啟 (目前第 ${state.day} 天)</div>`}
+          ${allInUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:14px; background:#ff2d55; padding:10px;">🔥 梭哈 (All-in)</button>` : `<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:8px; border-radius:8px; border:1px dashed #444;">🔒 鎖卡鍵：需達成遊戲天數 10 天才開啟 (目前第 ${state.day} 天)</div>`}
         </div>
       `;
     } else if (appId === 'loan') {
@@ -419,7 +429,7 @@
   }
 
   function getAppTitle(id) {
-    let map = { futurePay: '💳 未來支付', messages: '💬 訊息', ig: '📸 Instagram', casino: '🎲 橘哥娛樂城', loan: '💰 借貸錢莊' };
+    let map = { futurePay: '💳 未來支付', messages: '💬 Line 訊息', ig: '📸 Instagram', casino: '🎲 橘哥娛樂城', loan: '💰 借貸錢莊' };
     return map[id] || 'App';
   }
 
@@ -441,7 +451,7 @@
     let html = `
       <div class="app-nav-bar">
         <span style="font-weight:600; font-size:15px;">${c.avatar} ${c.name}</span>
-        <span onclick="this.closest('.app-view').remove()" style="color:#007aff; cursor:pointer; font-weight:600;">返回</span>
+        <span onclick="this.closest('.app-view').remove()" style="color:#00b900; cursor:pointer; font-weight:600;">返回</span>
       </div>
       <div class="app-body" id="chat-box" style="display:flex; flex-direction:column; gap:8px;">
     `;
@@ -449,7 +459,7 @@
       let type = m.sender === 'user' ? 'outgoing' : 'incoming';
       html += `<div class="chat-bubble ${type}">
         <div>${m.text}</div>
-        ${m.voice ? `<div class="voice-msg-btn" onclick="playVoiceSynth('${m.voice}')">🔊 語音訊息 (點擊播放)</div>` : ''}
+        <div class="voice-msg-btn" onclick="playVoiceSynth('${m.voice || m.text}')">▶ 語音訊息 (點擊播放)</div>
       </div>`;
       if (m.isCasinoLink) {
         html += `<div class="chat-bubble incoming link-box" onclick="installCasino()">
@@ -467,7 +477,6 @@
     screen.appendChild(view);
   }
 
-  // 繳費成功多巴胺彈窗與音效
   function payBill() {
     if (state.cash < state.currentBill.amount) {
       alert("【餘額不足】未來支付現金不足，無法繳納今日帳單！");
@@ -515,7 +524,7 @@
     updateUI();
   }
 
-  // 轉盤同步即時更新
+  // 轉盤邏輯與動態勝率計算
   function playSlotAnimation(amount) {
     if (state.day <= 5 && amount > 5000) {
       alert("【防沉迷限制】前 5 天平台規範：單筆投注金額不得超過 NT$ 5,000！");
@@ -540,13 +549,15 @@
 
     setTimeout(() => {
       let isWin = false;
-      
-      if (state.day === 2) isWin = Math.random() < 0.85;
-      else if (state.day === 3) isWin = Math.random() < 0.70;
-      else if (state.day === 4) isWin = Math.random() < 0.35; 
-      else {
-        let winRate = Math.max(0.12, 0.50 - (state.day * 0.015));
-        isWin = Math.random() < winRate;
+      let totalSpinsGlobal = (state.day - 1) * 10 + state.spinsToday + 1;
+
+      // 前三次轉盤保證獲勝
+      if (totalSpinsGlobal <= 3) {
+        isWin = true;
+      } else {
+        // 後面大約維持 60% 勝率、40% 輸，越後面輸的機率越高
+        let winProbability = Math.max(0.15, 0.60 - (state.day * 0.015));
+        isWin = Math.random() < winProbability;
       }
 
       r1.className = "slot-reel-inner";
@@ -575,22 +586,19 @@
 
       state.spinsToday++;
       
-      // 即時同步更新 APP 內畫面餘額與剩餘轉動次數
       let liveCashEl = document.getElementById("casino-live-cash");
       if (liveCashEl) liveCashEl.innerText = `NT$ ${state.cash.toLocaleString()}`;
       
-      let casinoTitle = document.querySelector("#active-app-view h2");
-      let spinsLeft = Math.max(0, 10 - state.spinsToday);
-      if (casinoTitle) casinoTitle.innerText = `🎲 橘哥娛樂城 (剩餘轉動: ${spinsLeft}/10)`;
-
       updateUI();
 
-      if ((state.cash < 10000 || state.day === 4) && !state.loanInstalled && state.casinoInstalled) {
+      // 當現金低於 1,0000 且安裝了娛樂城後，阿偉傳訊息推薦網貸平台
+      if (state.cash < 10000 && !state.loanInstalled && state.casinoInstalled) {
         setTimeout(() => {
           state.contacts.friend.unread++;
           state.contacts.friend.messages.push({
             sender: "friend",
             text: "兄弟，看你現金快見底了？別擔心！我都在這個『借貸錢莊 App』拿週轉金，三秒撥款，快載來借錢翻盤！",
+            voice: "兄弟，看你現金快見底了？我都在這個借貸錢莊拿週轉金，快載來借錢翻盤！",
             isLoanLink: true
           });
           triggerNotification("好友阿偉", "兄弟，看你現金快見底了？我都在這個『借貸錢莊』...", "friend");
@@ -601,27 +609,65 @@
     }, 1200);
   }
 
+  // 面容審核與拍照提示
   function requestLoan(name, amount, rate) {
-    if (confirm(`【實名認證】確定向「${name}」申貸 NT$ ${amount.toLocaleString()}？需要進行 AI 拍臉驗證`)) {
-      alert("✅ 臉部識別成功！資金已匯入「未來支付」。");
-      state.loans.push({ name: name, amount: amount, rate: rate });
-      state.cash += amount;
-      
-      // 借網貸後開始在訊息欄推送各網貸平台廣告
-      state.contacts.loanAd1 = { name: "速速發小額貸款", avatar: "💸", unread: 1, messages: [{ sender: "loanAd1", text: "【秒撥款通知】恭喜您獲得 50,000 元信用額度，免保人、免照會，點擊立即撥款！" }] };
-      state.contacts.loanAd2 = { name: "鴻海極速融資", avatar: "⚡", unread: 1, messages: [{ sender: "loanAd2", text: "【急用錢首選】全台最低門檻，身分證即可借，當日放款！" }] };
-      triggerNotification("速速發小額貸款", "恭喜您獲得 50,000 元信用額度，點擊立即撥款！", "loanAd1");
+    let screen = document.getElementById("phone-screen");
+    if (!screen) return;
 
-      closeApp();
-      updateUI();
-    }
+    let modal = document.createElement("div");
+    modal.className = "face-verify-modal";
+    modal.innerHTML = `
+      <div style="font-size:36px; margin-bottom:10px;">📸</div>
+      <h3 style="color:#fff; margin-bottom:6px;">面容身份審核</h3>
+      <p id="verify-text" style="font-size:13px; color:#ff9500; margin-bottom:20px;">請確認眼鏡是否有摘除，以進行人臉識別解鎖</p>
+      <button class="ios-btn success" id="snap-btn" onclick="startCameraSnap('${name}', ${amount}, ${rate})">點擊拍照按鈕</button>
+    `;
+    screen.appendChild(modal);
+  }
+
+  function startCameraSnap(name, amount, rate) {
+    let textEl = document.getElementById("verify-text");
+    let btnEl = document.getElementById("snap-btn");
+    btnEl.style.display = "none";
+
+    let count = 3;
+    textEl.style.fontSize = "24px";
+    textEl.style.color = "#00ffcc";
+    textEl.innerText = count;
+
+    let timer = setInterval(() => {
+      count--;
+      if (count > 0) {
+        textEl.innerText = count;
+      } else {
+        clearInterval(timer);
+        textEl.innerText = "✅ 核准完成！";
+        playSound('win');
+
+        setTimeout(() => {
+          let modal = document.querySelector(".face-verify-modal");
+          if (modal) modal.remove();
+
+          alert(`✅ 審核通過！銀行已成功到帳 NT$ ${amount.toLocaleString()} 至您的「未來支付」。`);
+          state.loans.push({ name: name, amount: amount, rate: rate });
+          state.cash += amount;
+
+          // 借網貸後開始推送網貸平台廣告
+          state.contacts.loanAd1 = { name: "速速發小額貸款", avatar: "💸", unread: 1, messages: [{ sender: "loanAd1", text: "【秒撥款通知】恭喜您獲得 50,000 元信用額度，免保人、免照會，點擊立即撥款！", voice: "恭喜您獲得五萬元信用額度，點擊立即撥款！" }] };
+          triggerNotification("速速發小額貸款", "恭喜您獲得 50,000 元信用額度，點擊立即撥款！", "loanAd1");
+
+          closeApp();
+          updateUI();
+        }, 1000);
+      }
+    }, 1000);
   }
 
   function nextDay() {
     if (state.casinoInstalled && state.spinsToday < 10) {
       playSound('error');
       let spinsLeft = Math.max(0, 10 - state.spinsToday);
-      alert(`【今日任務未完成】轉輪盤十次時尚未完成！(還需轉 ${spinsLeft} 次)`);
+      alert(`【今日任務未完成】轉輪盤十次尚未完成！(還需轉 ${spinsLeft} 次)`);
       return;
     }
     if (!state.currentBill.paid) {
@@ -650,24 +696,23 @@
 
     if (state.loans.length > 0) {
       setTimeout(() => {
-        state.contacts.loanSys = { name: "地下融資催收處", avatar: "⚠️", unread: 1, messages: [{ sender: "loanSys", text: `【利息帳單】您目前高利貸總欠款因 50% 利息滾動已達 NT$ ${totalLoanAmount.toLocaleString()}，請盡速還款！` }] };
+        state.contacts.loanSys = { name: "地下融資催收處", avatar: "⚠️", unread: 1, messages: [{ sender: "loanSys", text: `【利息帳單】您目前高利貸總欠款因 50% 利息滾動已達 NT$ ${totalLoanAmount.toLocaleString()}，請盡速還款！`, voice: `高利貸總欠款已達新台幣 ${totalLoanAmount.toLocaleString()} 元，請盡速還款！` }] };
         triggerNotification("地下融資催收處", `高利貸總欠款已達 NT$ ${totalLoanAmount.toLocaleString()}！`, "loanSys");
         updateUI();
       }, 1000);
     }
 
-    // 設定隔日帳單與老婆小孩的 AI 生成對話
     if (dailyConfig[state.day]) {
       state.currentBill = { name: dailyConfig[state.day].bill.name, amount: dailyConfig[state.day].bill.amount, paid: false };
       
       if (dailyConfig[state.day].wife) {
         state.contacts.wife.unread++;
-        state.contacts.wife.messages.push({ sender: "wife", text: dailyConfig[state.day].wife });
+        state.contacts.wife.messages.push({ sender: "wife", text: dailyConfig[state.day].wife, voice: dailyConfig[state.day].wife });
         triggerNotification("老婆", dailyConfig[state.day].wife, "wife");
       }
       if (dailyConfig[state.day].child) {
         state.contacts.child.unread++;
-        state.contacts.child.messages.push({ sender: "child", text: dailyConfig[state.day].child });
+        state.contacts.child.messages.push({ sender: "child", text: dailyConfig[state.day].child, voice: dailyConfig[state.day].child });
         triggerNotification("小孩", dailyConfig[state.day].child, "child");
       }
     } else {
@@ -679,23 +724,24 @@
       state.contacts.friend.messages.push({
         sender: "friend",
         text: "欸兄弟！我最近在『橘哥娛樂城』爽賺翻了！連結發你，趕快上車！",
+        voice: "欸兄弟！我最近在橘哥娛樂城爽賺翻了！連結發你，趕快上車！",
         isCasinoLink: true
       });
       triggerNotification("好友阿偉", "欸兄弟！我最近在『橘哥娛樂城』爽賺翻了！...", "friend");
     }
 
     if (state.day === 20) {
-      state.contacts.collector = { name: "討債專員-虎哥", avatar: "🕶️", unread: 1, messages: [{ sender: "collector", text: "林先生，聽說你躲得很開心？我們已經知道你家地址跟小孩學校在哪了，明天中午前沒看到錢，自己小心點。" }] };
+      state.contacts.collector = { name: "討債專員-虎哥", avatar: "🕶️", unread: 1, messages: [{ sender: "collector", text: "林先生，聽說你躲得很開心？我們已經知道你家地址跟小孩學校在哪了，明天中午前沒看到錢，自己小心點。", voice: "林先生，我們已經知道你家地址跟小孩學校在哪了，明天中午前沒看到錢自己小心點。" }] };
       triggerNotification("討債專員-虎哥", "我們已經知道你家地址跟小孩學校在哪了...", "collector");
     }
 
     if (state.day === 29) {
-      state.contacts.collector = { name: "討債專員-虎哥", avatar: "🕶️", unread: 1, messages: [{ sender: "collector", text: "碰！大門被砸的聲音。小子，限你三小時內生出 50 萬，不然今天砍你一隻手！" }] };
+      state.contacts.collector = { name: "討債專員-虎哥", avatar: "🕶️", unread: 1, messages: [{ sender: "collector", text: "碰！大門被砸的聲音。小子，限你三小時內生出 50 萬，不然今天砍你一隻手！", voice: "小子，限你三小時內生出五十萬，不然今天砍你一隻手！" }] };
       triggerNotification("討債專員-虎哥", "限你三小時內生出 50 萬，不然今天砍你一隻手！", "collector");
     }
 
     if (state.day > state.maxDays) {
-      alert("【悲劇結局：家破人亡】\n\n因沉迷線上博弈與地下高利貸，你不但輸光了積蓄、氣死至親，妻子也帶著孩子絕望離去。面對排山倒海的債務與黑衣人的暴力逼債，你在冰冷的房間中留下一封遺書，結束了一生。\n\n警語：回頭是岸，遠離賭博，珍惜摯愛。");
+      alert("【悲劇結局：家破人亡】\n\n因沉迷線上博弈與地下高利貸, 你不但輸光了積蓄、氣死至親, 妻子也帶著孩子絕望離去。面對排山倒海的債務與黑衣人的暴力逼債, 你在冰冷的房間中留下一封遺書, 結束了一生。\n\n警語：回頭是岸, 遠離賭博, 珍惜摯愛。");
       location.reload();
       return;
     }
