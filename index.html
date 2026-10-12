@@ -213,6 +213,13 @@
     15: { bill: { name: "最終債務結算", amount: 50000 }, wife: "（已讀不回）", child: "（不在身邊）" }
   };
 
+  const platformPool = [
+    ["橘速貸", "黑貓錢莊", "速速發借款"],
+    ["富豪極速融資", "金流信用貸", "帝國資產借款"],
+    ["銀河小額週轉", "萬通民間借貸", "大眾信託融資"],
+    ["極速現金急救站", "地下金流網", "黑傑克高利信貸"]
+  ];
+
   let state = {
     day: 1,
     maxDays: 15,
@@ -224,6 +231,7 @@
     loanInstalled: false,
     spinsToday: 0,
     loanVisitCount: 0,
+    loanBatchIndex: 0, // 借貸平台刷新的批次索引
     contacts: {
       wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️" }] },
       child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？" }] },
@@ -398,38 +406,7 @@
       }
 
     } else if (appId === 'loan') {
-      let rates = [0.20, 0.40, 0.50, 0.60, 0.80, 1.00];
-      let currentRate = rates[Math.min(state.loanVisitCount, rates.length - 1)];
-
-      let baseAmount = 30000 + (state.day * 10000);
-      let platforms = [
-        { name: "橘速貸", amount: baseAmount, rate: currentRate },
-        { name: "黑貓錢莊", amount: baseAmount + 10000, rate: currentRate },
-        { name: "速速發借款", amount: baseAmount + 20000, rate: currentRate }
-      ];
-
-      let infoBox = document.createElement("div");
-      infoBox.style.cssText = "font-size:11px; color:#ff9500; margin-bottom:10px; background:rgba(255,149,0,0.1); padding:8px; border-radius:8px;";
-      infoBox.innerHTML = "💡 當前借貸利率：<b>" + Math.round(currentRate * 100) + "%</b>。今天借款不用今天還，滿兩天才需清償！";
-      body.appendChild(infoBox);
-
-      platforms.forEach(p => {
-        let isBorrowed = state.borrowedPlatforms.includes(p.name);
-        let pDiv = document.createElement("div");
-        pDiv.style.cssText = "background:#2c2c2e; padding:10px; border-radius:10px; margin-bottom:8px; opacity:" + (isBorrowed ? 0.5 : 1) + ";";
-        pDiv.innerHTML = '<b>' + p.name + ' (利率 ' + Math.round(p.rate * 100) + '%)</b>' +
-                         '<div style="font-size:10px; color:#aaa;">可貸 NT$ ' + p.amount.toLocaleString() + '</div>';
-        
-        let loanBtn = document.createElement("button");
-        loanBtn.className = isBorrowed ? "ios-btn" : "ios-btn success";
-        loanBtn.style.cssText = "padding:6px; font-size:12px; margin-top:6px;";
-        loanBtn.innerText = isBorrowed ? "已借過" : "立即申貸";
-        loanBtn.disabled = isBorrowed;
-        loanBtn.onclick = () => { playSound('click'); requestLoan(p.name, p.amount, p.rate); };
-        pDiv.appendChild(loanBtn);
-        body.appendChild(pDiv);
-      });
-
+      renderLoanApp(body);
     } else if (appId === 'ig') {
       body.innerHTML = '<div style="background:#1a1a1a; padding:12px; border-radius:12px;">' +
                        '<b>👑 官方社群 @boss_orange</b>' +
@@ -438,6 +415,62 @@
     }
 
     screen.appendChild(view);
+  }
+
+  function renderLoanApp(bodyContainer) {
+    bodyContainer.innerHTML = "";
+
+    let rates = [0.20, 0.40, 0.50, 0.60, 0.80, 1.00];
+    let currentRate = rates[Math.min(state.loanVisitCount, rates.length - 1)];
+
+    let currentNames = platformPool[state.loanBatchIndex % platformPool.length];
+    let baseAmount = 30000 + (state.day * 10000) + (state.loanBatchIndex * 20000);
+
+    let platforms = [
+      { name: currentNames[0], amount: baseAmount, rate: currentRate },
+      { name: currentNames[1], amount: baseAmount + 10000, rate: currentRate },
+      { name: currentNames[2], amount: baseAmount + 20000, rate: currentRate }
+    ];
+
+    let headerBox = document.createElement("div");
+    headerBox.style.cssText = "display:flex; justify-style:space-between; align-items:center; margin-bottom:10px;";
+    
+    let infoText = document.createElement("div");
+    infoText.style.cssText = "font-size:11px; color:#ff9500; background:rgba(255,149,0,0.1); padding:8px; border-radius:8px; flex:1; margin-right:8px;";
+    infoText.innerHTML = "💡 當前利率：<b>" + Math.round(currentRate * 100) + "%</b>。滿兩天才需清償！";
+    headerBox.appendChild(infoText);
+
+    let refreshBtn = document.createElement("button");
+    refreshBtn.className = "ios-btn success";
+    refreshBtn.style.cssText = "width:auto; padding:8px 12px; font-size:12px; margin:0; white-space:nowrap;";
+    refreshBtn.innerText = "🔄 刷新平台";
+    refreshBtn.onclick = () => {
+      playSound('click');
+      state.loanBatchIndex++;
+      state.loanVisitCount++;
+      renderLoanApp(bodyContainer);
+      alert("🔄 已成功刷新載入全新的借貸平台！");
+    };
+    headerBox.appendChild(refreshBtn);
+
+    bodyContainer.appendChild(headerBox);
+
+    platforms.forEach(p => {
+      let isBorrowed = state.borrowedPlatforms.includes(p.name);
+      let pDiv = document.createElement("div");
+      pDiv.style.cssText = "background:#2c2c2e; padding:10px; border-radius:10px; margin-bottom:8px; opacity:" + (isBorrowed ? 0.5 : 1) + ";";
+      pDiv.innerHTML = '<b>' + p.name + ' (利率 ' + Math.round(p.rate * 100) + '%)</b>' +
+                       '<div style="font-size:10px; color:#aaa;">可貸 NT$ ' + p.amount.toLocaleString() + '</div>';
+      
+      let loanBtn = document.createElement("button");
+      loanBtn.className = isBorrowed ? "ios-btn" : "ios-btn success";
+      loanBtn.style.cssText = "padding:6px; font-size:12px; margin-top:6px;";
+      loanBtn.innerText = isBorrowed ? "已借過" : "立即申貸";
+      loanBtn.disabled = isBorrowed;
+      loanBtn.onclick = () => { playSound('click'); requestLoan(p.name, p.amount, p.rate); };
+      pDiv.appendChild(loanBtn);
+      bodyContainer.appendChild(pDiv);
+    });
   }
 
   function getAppTitle(id) {
@@ -622,7 +655,7 @@
     playSound('spin');
 
     setTimeout(() => {
-      let winProb = 0.60; // $5000 預設勝率 60%
+      let winProb = 0.60;
       if (amount === 5000) winProb = 0.60;
       else if (amount === 10000) winProb = 0.30;
       else if (amount === 50000 || amount === state.cash) winProb = 0.10;
@@ -714,7 +747,7 @@
           if (modal) modal.remove();
 
           let totalRepay = Math.floor(amount * (1 + rate));
-          let dueDay = state.day + 2; // 隔兩天才需還款
+          let dueDay = state.day + 2;
           alert("✅ 審核通過！「" + name + "」已撥款 NT$ " + amount.toLocaleString() + "。\n💡 提醒：今天借款不用今天還，本利和共 NT$ " + totalRepay.toLocaleString() + " 將於【第 " + dueDay + " 天（過兩天）】到期需在未來支付還款！");
           
           state.loans.push({ name: name, amount: totalRepay, dueDay: dueDay });
@@ -753,7 +786,6 @@
       return;
     }
 
-    // 檢查是否有逾期或到期未還的高利貸
     let overdueLoans = state.loans.filter(l => state.day >= l.dueDay);
     if (overdueLoans.length > 0) {
       playSound('error-pay');
@@ -761,7 +793,6 @@
       return;
     }
 
-    // 播放過場動畫與動畫文字
     let mask = document.getElementById("transition-mask");
     let transText = document.getElementById("transition-text");
     let nextD = state.day + 1;
