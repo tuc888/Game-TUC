@@ -196,7 +196,7 @@
   }
 
   const dailyConfig = {
-    1: { bill: { name: "家庭伙食與日常用品費", amount: 3000 }, wife: "老公，今天晚餐做了你愛吃的糖醋排骨，快回來吃喔！", child: "爸爸今天下班會買科學麵給我嗎？" },
+    1: { bill: { name: "家庭伙食與日常用品費", amount: 3000 }, wife: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️", child: "爸爸今天下班會買科學麵給我嗎？" },
     2: { bill: { name: "水電與瓦斯基本費", amount: 2500 }, wife: "老公，阿偉好像一直傳訊息給你，你們最近在聊什麼投資啊？感覺怪怪的。", child: "爸爸，學校老師說要繳班費 500 元喔！" },
     3: { bill: { name: "小孩幼兒園才藝班學費", amount: 8000 }, wife: "才藝班學費帳單來了，這幾天開銷好大，你薪水夠用嗎？", child: "爸爸陪我玩積木！" },
     4: { bill: { name: "本月房屋租金與水電費", amount: 20000 }, wife: "房東剛剛狂打電話催房租 2 萬了！你帳戶到底還有沒有錢啊？", child: "爸爸肚子餓..." },
@@ -217,7 +217,8 @@
     ["橘速貸", "黑貓錢莊", "速速發借款"],
     ["富豪極速融資", "金流信用貸", "帝國資產借款"],
     ["銀河小額週轉", "萬通民間借貸", "大眾信託融資"],
-    ["極速現金急救站", "地下金流網", "黑傑克高利信貸"]
+    ["極速現金急救站", "地下金流網", "黑傑克高利信貸"],
+    ["天龍巨額私人借款", "神話頂級融資", "終極暴利地下錢莊"]
   ];
 
   let state = {
@@ -231,7 +232,7 @@
     loanInstalled: false,
     spinsToday: 0,
     loanVisitCount: 0,
-    loanBatchIndex: 0, // 借貸平台刷新的批次索引
+    loanBatchIndex: 0,
     contacts: {
       wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️" }] },
       child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？" }] },
@@ -420,36 +421,45 @@
   function renderLoanApp(bodyContainer) {
     bodyContainer.innerHTML = "";
 
-    let rates = [0.20, 0.40, 0.50, 0.60, 0.80, 1.00];
-    let currentRate = rates[Math.min(state.loanVisitCount, rates.length - 1)];
+    // 利率隨著刷新次數遞增：20% -> 40% -> 60% -> 80% -> 100% -> 150%...
+    let rates = [0.20, 0.40, 0.60, 0.80, 1.00, 1.50];
+    let currentRate = rates[Math.min(state.loanBatchIndex, rates.length - 1)];
 
+    // 金額隨著刷新次數階梯式暴增：10萬 -> 20萬 -> 30萬 -> 50萬 -> 100萬 -> 200萬...
+    let amountTiers = [
+      [100000, 150000, 200000],
+      [200000, 300000, 400000],
+      [300000, 500000, 700000],
+      [500000, 1000000, 1500000],
+      [1000000, 2000000, 3000000]
+    ];
+    let currentAmounts = amountTiers[Math.min(state.loanBatchIndex, amountTiers.length - 1)];
     let currentNames = platformPool[state.loanBatchIndex % platformPool.length];
-    let baseAmount = 30000 + (state.day * 10000) + (state.loanBatchIndex * 20000);
 
     let platforms = [
-      { name: currentNames[0], amount: baseAmount, rate: currentRate },
-      { name: currentNames[1], amount: baseAmount + 10000, rate: currentRate },
-      { name: currentNames[2], amount: baseAmount + 20000, rate: currentRate }
+      { name: currentNames[0], amount: currentAmounts[0], rate: currentRate },
+      { name: currentNames[1], amount: currentAmounts[1], rate: currentRate },
+      { name: currentNames[2], amount: currentAmounts[2], rate: currentRate }
     ];
 
     let headerBox = document.createElement("div");
-    headerBox.style.cssText = "display:flex; justify-style:space-between; align-items:center; margin-bottom:10px;";
+    headerBox.style.cssText = "display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;";
     
     let infoText = document.createElement("div");
     infoText.style.cssText = "font-size:11px; color:#ff9500; background:rgba(255,149,0,0.1); padding:8px; border-radius:8px; flex:1; margin-right:8px;";
-    infoText.innerHTML = "💡 當前利率：<b>" + Math.round(currentRate * 100) + "%</b>。滿兩天才需清償！";
+    infoText.innerHTML = "💡 當前利率：<b>" + Math.round(currentRate * 100) + "%</b>。滿兩天天才需清償！";
     headerBox.appendChild(infoText);
 
     let refreshBtn = document.createElement("button");
     refreshBtn.className = "ios-btn success";
     refreshBtn.style.cssText = "width:auto; padding:8px 12px; font-size:12px; margin:0; white-space:nowrap;";
-    refreshBtn.innerText = "🔄 刷新平台";
+    refreshBtn.innerText = "🔄 刷新更高額度";
     refreshBtn.onclick = () => {
       playSound('click');
       state.loanBatchIndex++;
       state.loanVisitCount++;
       renderLoanApp(bodyContainer);
-      alert("🔄 已成功刷新載入全新的借貸平台！");
+      alert("🔄 已刷新跳出更高等級的店家！可借額度大幅提升至最高百萬等級，利率同步升高！");
     };
     headerBox.appendChild(refreshBtn);
 
