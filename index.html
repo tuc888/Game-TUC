@@ -19,16 +19,13 @@
     .app-label { font-size: 11px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
     .badge { position: absolute; top: -2px; right: 8px; background: #ff3b30; color: white; border-radius: 10px; font-size: 10px; padding: 2px 6px; font-weight: bold; display: none; }
     
-    /* Line 風格通知與彈窗 */
     .ios-notification { position: absolute; top: 50px; left: 12px; right: 12px; background: rgba(30,30,30,0.95); backdrop-filter: blur(20px); border-radius: 16px; padding: 12px 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid rgba(0,255,100,0.3); z-index: 200; animation: slideDown 0.4s ease-out; cursor: pointer; }
     @keyframes slideDown { from { transform: translateY(-70px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* 多巴胺支付成功 / 餘額不足彈窗 */
     .success-popup { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(20,20,20,0.95); border: 2px solid #34c759; border-radius: 20px; padding: 24px; text-align: center; z-index: 500; box-shadow: 0 15px 35px rgba(0,0,0,0.8); animation: popIn 0.3s ease-out; }
     .error-popup { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(30,10,10,0.95); border: 2px solid #ff3b30; border-radius: 20px; padding: 24px; text-align: center; z-index: 500; box-shadow: 0 15px 35px rgba(0,0,0,0.8); animation: popIn 0.3s ease-out; }
     @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
-    /* 臉部審核彈窗 */
     .face-verify-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 400; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; }
 
     .app-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 50; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; }
@@ -42,7 +39,6 @@
     .ios-btn.success { background: #34c759; }
     .ios-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-    /* 拉霸動畫與外觀 */
     .slot-machine-box { background: #222; border-radius: 16px; padding: 14px; border: 2px solid #444; margin: 10px 0; box-shadow: inset 0 0 10px #000; }
     .slot-reels-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
     .slot-reel { width: 70px; height: 80px; background: #000; border-radius: 10px; border: 2px solid #ffd700; display: flex; justify-content: center; align-items: center; font-size: 38px; overflow: hidden; position: relative; }
@@ -50,14 +46,12 @@
     .spinning { animation: reelSpin 0.1s linear infinite; }
     @keyframes reelSpin { 0% { transform: translateY(0); } 100% { transform: translateY(-120px); } }
 
-    /* 聊天室與語音 */
     .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin: 6px 0; font-size: 13px; line-height: 1.4; word-break: break-all; position: relative; }
     .chat-bubble.incoming { background: #262628; color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
     .chat-bubble.outgoing { background: #00b900; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
     .chat-bubble.link-box { background: #1e3a5f; border: 1px solid #007aff; cursor: pointer; }
     .voice-msg-btn { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; cursor: pointer; width: fit-content; margin-top: 6px; font-size: 12px; color: #00ffcc; border: 1px solid rgba(0,255,204,0.3); }
 
-    /* 過場天數牆 */
     .day-transition-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 300; display: flex; flex-direction: column; justify-content: center; align-items: center; animation: fadeInOut 1.8s ease-in-out forwards; }
     @keyframes fadeInOut { 0% { opacity: 0; } 30% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
     
@@ -68,7 +62,6 @@
 <body>
 
 <div class="iphone-frame" id="phone-frame">
-  <!-- iOS 狀態列 -->
   <div class="ios-status-bar">
     <span id="current-time">18:00</span>
     <div class="dynamic-island" id="day-badge">第 1 天</div>
@@ -76,16 +69,12 @@
   </div>
 
   <div class="iphone-screen" id="phone-screen">
-    <!-- 主畫面桌面 -->
     <div class="home-desktop">
-      
-      <!-- 輪播新聞 -->
       <div class="news-banner" onclick="openApp('news')">
         <span id="news-ticker-text">📰 【即時新聞】理財專家警告：非法網路博弈與高利貸吸金陷阱頻傳...</span>
         <span style="font-size:11px; color:#aaa;">▶</span>
       </div>
 
-      <!-- App 網格 -->
       <div class="app-grid">
         <div class="app-icon-container" onclick="openApp('futurePay')">
           <div class="app-icon" style="background: linear-gradient(135deg, #007aff, #00c6ff);">💳</div>
@@ -110,13 +99,11 @@
         </div>
       </div>
 
-      <!-- 底部日常任務卡片 -->
       <div style="background: rgba(0,0,0,0.6); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.15); margin-top: auto;">
         <h3 id="story-title" style="margin:0 0 4px 0; color:#00ffcc; font-size:15px;">第 1 天</h3>
         <div id="day-task-status" style="font-size:11px; color:#ff9500; margin-bottom:6px; line-height:1.3;">📌 待辦事項：處理今日帳單開銷。</div>
         <button class="ios-btn success" id="next-day-btn" onclick="nextDay()">結束今天，進入明天</button>
       </div>
-
     </div>
   </div>
 </div>
@@ -209,7 +196,7 @@
     cash: 35000,
     currentBill: { name: "家庭伙食與日常用品費", amount: 3000, paid: false },
     loans: [],
-    borrowedPlatforms: [], // 記錄已經借過的平台名稱
+    borrowedPlatforms: [], 
     casinoInstalled: false,
     loanInstalled: false,
     spinsToday: 0,
@@ -241,12 +228,13 @@
       let taskEl = document.getElementById("day-task-status");
       if (taskEl) {
         let billStatus = state.currentBill.paid ? "✅ 今日帳單已繳納" : `⏳ 待繳: ${state.currentBill.name} (NT$ ${state.currentBill.amount.toLocaleString()})`;
+        let loanClearStatus = state.loans.length === 0 ? "✅ 無高利貸負債" : `⚠️ 尚有高利貸未清償 (共 ${state.loans.length 筆})`;
 
         if (state.day === 1 || !state.casinoInstalled) {
-          taskEl.innerText = "📌 待辦事項：處理今日帳單開銷。";
+          taskEl.innerText = `📌 待辦事項：處理今日帳單開銷。| ${loanClearStatus}`;
         } else {
           let spinsLeft = Math.max(0, 10 - state.spinsToday);
-          taskEl.innerText = `📌 待轉輪盤目標是10次, 目前已打 ${state.spinsToday} 次 (剩餘 ${spinsLeft} 次) | ${billStatus}`;
+          taskEl.innerText = `📌 待轉輪盤目標是10次, 已打 ${state.spinsToday} 次 (剩餘 ${spinsLeft} 次) | ${billStatus} | ${loanClearStatus}`;
         }
       }
     } catch(e) {
@@ -291,7 +279,6 @@
     </div><div class="app-body">`;
 
     if (appId === 'futurePay') {
-      let totalLoan = state.loans.reduce((sum, l) => sum + l.amount, 0);
       html += `
         <div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">
           <div style="font-size:11px; color:#aaa;">未來支付 - 當前可用現金餘額</div>
@@ -300,12 +287,20 @@
       `;
 
       if (state.loans.length > 0) {
-        html += `
-          <div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">
-            <div style="font-size:11px; color:#aaa;">地下高利貸累積總欠款</div>
-            <div style="font-size:22px; font-weight:bold; color:#ff3b30; margin-top:2px;">NT$ ${totalLoan.toLocaleString()}</div>
-          </div>
-        `;
+        html += `<div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">
+          <div style="font-size:13px; font-weight:bold; color:#ff3b30; margin-bottom:8px;">⚠️ 地下高利貸欠款明細（必須全數還清才能進下一天）</div>`;
+        state.loans.forEach((l, idx) => {
+          html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #222;">
+              <div>
+                <div style="font-size:12px; font-weight:bold;">${l.name}</div>
+                <div style="font-size:10px; color:#ff9500;">本利和應還: NT$ ${l.amount.toLocaleString()}</div>
+              </div>
+              <button class="ios-btn success" style="width:auto; padding:6px 12px; font-size:11px; margin:0;" onclick="repayLoan(${idx})">還款</button>
+            </div>
+          `;
+        });
+        html += `</div>`;
       }
 
       html += `
@@ -375,21 +370,20 @@
         </div>
       `;
     } else if (appId === 'loan') {
-      // 根據天數動態解鎖新平台，利率與金額隨天數遞增（利率每隔一天增 10%，起始 20%）
+      let baseAmount = 50000 + (state.day * 25000);
+      let baseRate = 0.20 + ((state.day - 1) * 0.15);
+
       let platforms = [
-        { name: "橘速貸", amount: 50000 + (state.day * 10000), rate: 0.20 + Math.floor((state.day - 1) / 2) * 0.10 },
-        { name: "黑貓錢莊", amount: 100000 + (state.day * 15000), rate: 0.30 + Math.floor((state.day - 1) / 2) * 0.10 },
-        { name: "速速發借款", amount: 150000 + (state.day * 20000), rate: 0.40 + Math.floor((state.day - 1) / 2) * 0.10 }
+        { name: "橘速貸", amount: baseAmount, rate: baseRate },
+        { name: "黑貓錢莊", amount: Math.floor(baseAmount * 1.5), rate: baseRate + 0.10 },
+        { name: "速速發借款", amount: Math.floor(baseAmount * 2), rate: baseRate + 0.20 }
       ];
 
       if (state.day >= 3) {
-        platforms.push({ name: "鴻海極速融資", amount: 200000 + (state.day * 25000), rate: 0.50 + Math.floor((state.day - 1) / 2) * 0.10 });
-      }
-      if (state.day >= 6) {
-        platforms.push({ name: "兄弟發圓夢金", amount: 300000 + (state.day * 30000), rate: 0.60 + Math.floor((state.day - 1) / 2) * 0.10 });
+        platforms.push({ name: "鴻海極速融資", amount: Math.floor(baseAmount * 2.5), rate: baseRate + 0.30 });
       }
 
-      html += `<p style="font-size:11px; color:#aaa; margin-top:0;">地下融資借貸平台（每隔一天催繳，利率隨天數遞增）：</p>`;
+      html += `<p style="font-size:11px; color:#aaa; margin-top:0;">地下融資平台（每日更新：額度更高、利息更驚人）：</p>`;
       
       platforms.forEach(p => {
         let isBorrowed = state.borrowedPlatforms.includes(p.name);
@@ -398,7 +392,7 @@
             <b>${p.name} (利率 ${Math.round(p.rate * 100)}%)</b>
             <div style="font-size:10px; color:#aaa; margin:2px 0;">可貸金額 NT$ ${p.amount.toLocaleString()}</div>
             <button class="ios-btn ${isBorrowed?'':'success'}" style="padding:6px; font-size:12px; margin:0;" ${isBorrowed?'disabled':''} onclick="requestLoan('${p.name}', ${p.amount}, ${p.rate})">
-              ${isBorrowed ? '已借過（不得重複借貸）' : '立即申貸'}
+              ${isBorrowed ? '已借過（不得重複）' : '立即申貸'}
             </button>
           </div>
         `;
@@ -509,6 +503,24 @@
     updateUI();
   }
 
+  function repayLoan(index) {
+    let loan = state.loans[index];
+    if (state.cash < loan.amount) {
+      playSound('error-pay');
+      alert(`【餘額不足】現金不足以償還 ${loan.name} 的本利和 NT$ ${loan.amount.toLocaleString()}！`);
+      return;
+    }
+
+    state.cash -= loan.amount;
+    state.loans.splice(index, 1);
+    playSound('success-pay');
+    alert(`✅ 成功還清 ${loan.name}！已扣除 NT$ ${loan.amount.toLocaleString()}`);
+
+    closeApp();
+    openApp('futurePay');
+    updateUI();
+  }
+
   function installCasino() {
     if (state.casinoInstalled) return;
     alert("📲 「橘哥娛樂城 App」安裝完成！已新增至手機桌面。");
@@ -599,11 +611,11 @@
           state.contacts.friend.unread++;
           state.contacts.friend.messages.push({
             sender: "friend",
-            text: "兄弟，看你現金快見底了？別擔心！我都在這個『借貸錢莊 App』拿週轉金，三秒撥款，快載來借錢翻盤！",
-            voice: "兄弟，看你現金快見底了？我都在這個借貸錢莊拿週轉金，快載來借錢翻盤！",
+            text: "兄弟, 看你現金快見底了？別擔心！我都在這個『借貸錢莊 App』拿週轉金，三秒撥款，快載來借錢翻盤！",
+            voice: "兄弟, 看你現金快見底了？我都在這個借貸錢莊拿週轉金, 快載來借錢翻盤！",
             isLoanLink: true
           });
-          triggerNotification("好友阿偉", "兄弟，看你現金快見底了？我都在這個『借貸錢莊』...", "friend");
+          triggerNotification("好友阿偉", "兄弟, 看你現金快見底了？我都在這個『借貸錢莊』...", "friend");
           updateUI();
         }, 600);
       }
@@ -654,13 +666,21 @@
           let modal = document.querySelector(".face-verify-modal");
           if (modal) modal.remove();
 
-          alert(`✅ 審核通過！「${name}」已成功撥款 NT$ ${amount.toLocaleString()} 至您的「未來支付」。`);
-          state.loans.push({ name: name, amount: amount, rate: rate, dayBorrowed: state.day });
+          let totalRepay = Math.floor(amount * (1 + rate));
+          alert(`✅ 審核通過！「${name}」已撥款 NT$ ${amount.toLocaleString()}。注意：本利和共 NT$ ${totalRepay.toLocaleString()} 必須於隔天還清！`);
+          
+          state.loans.push({ name: name, amount: totalRepay, rate: rate });
           state.borrowedPlatforms.push(name);
           state.cash += amount;
 
-          state.contacts.loanAd1 = { name: "速速發小額貸款", avatar: "💸", unread: 1, messages: [{ sender: "loanAd1", text: "【秒撥款通知】恭喜您獲得信用額度提升，點擊立即撥款！", voice: "恭喜您獲得信用額度提升，點擊立即撥款！" }] };
-          triggerNotification("速速發小額貸款", "恭喜您獲得信用額度提升，點擊立即撥款！", "loanAd1");
+          let collectorKey = "collector_" + Date.now();
+          state.contacts[collectorKey] = {
+            name: `${name} 催收專員`,
+            avatar: "⚠️",
+            unread: 1,
+            messages: [{ sender: collectorKey, text: `【撥款成功通知】您已向本公司借款，本利和共 NT$ ${totalRepay.toLocaleString()}，明天到期必須全數清償，否則後果自負！`, voice: `您已向本公司借款，明天到期必須全數清償，否則後果自負！` }]
+          };
+          triggerNotification(`${name} 催收專員`, `本利和 NT$ ${totalRepay.toLocaleString()}，明天到期必須清償！`, collectorKey);
 
           closeApp();
           updateUI();
@@ -679,6 +699,11 @@
     if (!state.currentBill.paid) {
       playSound('error');
       alert(`【財務未完成】今天必須在「未來支付」繳納「${state.currentBill.name}」NT$ ${state.currentBill.amount.toLocaleString()}！`);
+      return;
+    }
+    if (state.loans.length > 0) {
+      playSound('error');
+      alert(`【強制還款警告】您目前身上還有未清償的高利貸欠款！必須至「未來支付」將所有貸款「還款」完畢後，才能晉級下一天！`);
       return;
     }
 
@@ -706,24 +731,6 @@
         voice: "老公！黑衣人跑到我們家裡來撒冥紙，把小朋友帶走了！你到底惹到誰了！"
       });
       triggerNotification("老婆", "黑衣人跑到我們家裡來，把小朋友帶走了！", "wife");
-    }
-
-    // 每隔一天（間隔 2 天）進行貸款催繳與利息滾動
-    let totalLoanAmount = 0;
-    state.loans.forEach(l => {
-      let daysPassed = state.day - l.dayBorrowed;
-      if (daysPassed > 0 && daysPassed % 2 === 0) {
-        l.amount = Math.floor(l.amount * (1 + l.rate));
-      }
-      totalLoanAmount += l.amount;
-    });
-
-    if (state.loans.length > 0) {
-      setTimeout(() => {
-        state.contacts.loanSys = { name: "地下融資催收處", avatar: "⚠️", unread: 1, messages: [{ sender: "loanSys", text: `【每隔兩日貸款催繳】您目前高利貸總欠款因利率滾動已達 NT$ ${totalLoanAmount.toLocaleString()}，請盡速還款！`, voice: `高利貸總欠款已達新台幣 ${totalLoanAmount.toLocaleString()} 元，請盡速還款！` }] };
-        triggerNotification("地下融資催收處", `高利貸總欠款已達 NT$ ${totalLoanAmount.toLocaleString()}！`, "loanSys");
-        updateUI();
-      }, 1000);
     }
 
     if (dailyConfig[state.day]) {
