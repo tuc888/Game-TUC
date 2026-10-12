@@ -40,6 +40,7 @@
     .ios-btn:active { opacity: 0.8; }
     .ios-btn.danger { background: #ff3b30; }
     .ios-btn.success { background: #34c759; }
+    .ios-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
     /* 拉霸動畫與外觀 */
     .slot-machine-box { background: #222; border-radius: 16px; padding: 14px; border: 2px solid #444; margin: 10px 0; box-shadow: inset 0 0 10px #000; }
@@ -184,19 +185,18 @@
     }
   }
 
-  // 15 天精華劇本與開銷
   const dailyConfig = {
-    1: { bill: { name: "家庭伙食與日常用品費", amount: 3000 }, wife: "老公，今天晚餐做了你愛吃的糖醋排骨，快回來吃喔！", child: "爸爸今天下班會買科學麵給我嗎？" },
-    2: { bill: { name: "水電與瓦斯基本費", amount: 2500 }, wife: "老公，阿偉好像一直傳訊息給你，你們最近在聊什麼投資啊？感覺怪怪的。", child: "爸爸，學校老師說要繳班費 500 元喔！" },
-    3: { bill: { name: "小孩幼兒園才藝班學費", amount: 8000 }, wife: "才藝班學費帳單來了，這幾天開銷好大，你薪水夠用嗎？", child: "爸爸陪我玩積木！" },
+    1: { bill: { name: "家庭伙食與日常用品費", amount: 3000 }, wife: "老公, 今天晚餐做了你愛吃的糖醋排骨, 快回來吃喔！", child: "爸爸今天下班會買科學麵給我嗎？" },
+    2: { bill: { name: "水電與瓦斯基本費", amount: 2500 }, wife: "老公, 阿偉好像一直傳訊息給你, 你們最近在聊什麼投資啊？感覺怪怪的。", child: "爸爸, 學校老師說要繳班費 500 元喔！" },
+    3: { bill: { name: "小孩幼兒園才藝班學費", amount: 8000 }, wife: "才藝班學費帳單來了, 這幾天開銷好大, 你薪水夠用嗎？", child: "爸爸陪我玩積木！" },
     4: { bill: { name: "本月房屋租金與水電費", amount: 20000 }, wife: "房東剛剛狂打電話催房租 2 萬了！你帳戶到底還有沒有錢啊？", child: "爸爸肚子餓..." },
-    5: { bill: { name: "機車定期保養與油錢", amount: 2000 }, wife: "老公，我看你最近一直滑手機按那個娛樂城，拜託你穩一點，別走歪路。", child: "爸爸今天可以帶我去公園溜滑梯嗎？" },
-    6: { bill: { name: "父母親慢性病藥品與保健費", amount: 6000 }, wife: "媽的慢性病藥吃完了，拿藥要 6 千塊，你等等轉給我。", child: "爸爸，我的色鉛筆用完了啦。" },
-    7: { bill: { name: "全家生活雜貨與採買", amount: 4500 }, wife: "冰箱空了，我帶小孩去全聯買菜，花了一點錢，你下班順便洗碗喔。", child: "爸爸我今天考試拿 100 分喔！" },
-    8: { bill: { name: "全家醫療與機車強制險", amount: 5000 }, wife: "保險費扣款日到了，戶頭差點餘額不足，你皮繃緊一點。", child: "爸爸我想喝麥香奶茶～" },
-    9: { bill: { name: "瓦斯與網路費", amount: 1800 }, wife: "網路費帳單寄來了，你記得繳。這幾天看你神情恍惚，是不是發生什麼事？", child: "爸爸你今天好安靜喔..." },
+    5: { bill: { name: "機車定期保養與油錢", amount: 2000 }, wife: "老公, 我看你最近一直滑手機按那個娛樂城, 拜託你穩一點, 別走歪路。", child: "爸爸今天可以帶我去公園溜滑梯嗎？" },
+    6: { bill: { name: "父母親慢性病藥品與保健費", amount: 6000 }, wife: "媽的慢性病藥吃完了, 拿藥要 6 千塊, 你等等轉給我。", child: "爸爸, 我的色鉛筆用完了啦。" },
+    7: { bill: { name: "全家生活雜貨與採買", amount: 4500 }, wife: "冰箱空了, 我帶小孩去全聯買菜, 花了一點錢, 你下班順便洗碗喔。", child: "爸爸我今天考試拿 100 分喔！" },
+    8: { bill: { name: "全家醫療與機車強制險", amount: 5000 }, wife: "保險費扣款日到了, 戶頭差點餘額不足, 你皮繃緊一點。", child: "爸爸我想喝麥香奶茶～" },
+    9: { bill: { name: "瓦斯與網路費", amount: 1800 }, wife: "網路費帳單寄來了, 你記得繳。這幾天看你神情恍惚, 是不是發生什麼事？", child: "爸爸你今天好安靜喔..." },
     10: { bill: { name: "房屋貸款分期利息", amount: 15000 }, wife: "老公！討債的人...黑衣人怎麼會突然跑到我們家裡來撒冥紙恐嚇要錢！天啊...他們剛剛竟然直接把小朋友帶走了！你到底惹到誰了？！", child: "爸爸救我...（哭喊聲）" },
-    11: { bill: { name: "小孩學雜費與應急開銷", amount: 12000 }, wife: "（已讀不回 / 孩子在他們手上，快救救小孩...）", child: "（不在身邊）" },
+    11: { bill: { name: "小孩學雜費與應急開銷", amount: 12000 }, wife: "（已讀不回 / 孩子在他們手上, 快救救小孩...）", child: "（不在身邊）" },
     12: { bill: { name: "汽車維修與燃料稅", amount: 8000 }, wife: "（已讀不回）", child: "（不在身邊）" },
     13: { bill: { name: "醫療與急難預備金", amount: 10000 }, wife: "（已讀不回）", child: "（不在身邊）" },
     14: { bill: { name: "債務利息分期", amount: 15000 }, wife: "（已讀不回）", child: "（不在身邊）" },
@@ -209,14 +209,15 @@
     cash: 35000,
     currentBill: { name: "家庭伙食與日常用品費", amount: 3000, paid: false },
     loans: [],
+    borrowedPlatforms: [], // 記錄已經借過的平台名稱
     casinoInstalled: false,
     loanInstalled: false,
     spinsToday: 0,
     vipAlertShown: false,
     contacts: {
-      wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️", voice: "老公，今天發薪水辛苦啦，晚上記得早點回家吃飯喔！" }] },
-      child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？", voice: "爸爸，我今天考了95分喔！" }] },
-      friend: { name: "好友阿偉", avatar: "🧔", unread: 0, messages: [{ sender: "friend", text: "兄弟，最近過得怎樣？有空出來喝一杯啊！", voice: "兄弟，最近過得怎樣？有空出來喝一杯啊！" }] }
+      wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公, 今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉, 記得早點回家喔 ❤️", voice: "老公, 今天發薪水辛苦啦, 晚上記得早點回家吃飯喔！" }] },
+      child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？", voice: "爸爸, 我今天考了95分喔！" }] },
+      friend: { name: "好友阿偉", avatar: "🧔", unread: 0, messages: [{ sender: "friend", text: "兄弟, 最近過得怎樣？有空出來喝一杯啊！", voice: "兄弟, 最近過得怎樣？有空出來喝一杯啊！" }] }
     }
   };
 
@@ -245,7 +246,7 @@
           taskEl.innerText = "📌 待辦事項：處理今日帳單開銷。";
         } else {
           let spinsLeft = Math.max(0, 10 - state.spinsToday);
-          taskEl.innerText = `📌 待轉輪盤目標是10次，目前已打 ${state.spinsToday} 次 (剩餘 ${spinsLeft} 次) \vert{} ${billStatus}`;
+          taskEl.innerText = `📌 待轉輪盤目標是10次, 目前已打 ${state.spinsToday} 次 (剩餘 ${spinsLeft} 次) | ${billStatus}`;
         }
       }
     } catch(e) {
@@ -329,7 +330,8 @@
           </div>
           <div style="flex:1; overflow:hidden;">
             <div style="font-weight:600; font-size:14px; display:flex; justify-content:space-between;">
-              <span>${c.name}</span>${c.unread > 0 ? `<span style="font-size:10px; background:#00b900; color:#fff; padding:1px 6px; border-radius:10px;">未讀 ${c.unread}</span>` : ''}
+              <span>${c.name}</span>
+              ${c.unread > 0 ? `<span style="font-size:10px; background:#00b900; color:#fff; padding:1px 6px; border-radius:10px;">未讀 ${c.unread}</span>` : ''}
             </div>
             <div style="font-size:12px; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${lastMsg}</div>
           </div>
@@ -373,22 +375,34 @@
         </div>
       `;
     } else if (appId === 'loan') {
-      // 網貸第一次借額度是 10 萬，後面幾天隨天數增加額度
-      let baseLoanAmount = 100000 + (state.day * 15000);
+      // 根據天數動態解鎖新平台，利率與金額隨天數遞增（利率每隔一天增 10%，起始 20%）
+      let platforms = [
+        { name: "橘速貸", amount: 50000 + (state.day * 10000), rate: 0.20 + Math.floor((state.day - 1) / 2) * 0.10 },
+        { name: "黑貓錢莊", amount: 100000 + (state.day * 15000), rate: 0.30 + Math.floor((state.day - 1) / 2) * 0.10 },
+        { name: "速速發借款", amount: 150000 + (state.day * 20000), rate: 0.40 + Math.floor((state.day - 1) / 2) * 0.10 }
+      ];
 
-      html += `
-        <p style="font-size:11px; color:#aaa; margin-top:0;">地下融資借貸平台（利息 50%）：</p>
-        <div style="background:#2c2c2e; padding:10px; border-radius:10px; margin-bottom:8px;">
-          <b>橘速貸 (信用額度解鎖)</b>
-          <div style="font-size:10px; color:#aaa; margin:2px 0;">快速撥款 NT$ ${baseLoanAmount.toLocaleString()}</div>
-          <button class="ios-btn" style="padding:6px; font-size:12px; margin:0;" onclick="requestLoan('橘速貸', ${baseLoanAmount}, 0.5)">立即申貸</button>
-        </div>
-        <div style="background:#2c2c2e; padding:10px; border-radius:10px; margin-bottom:8px;">
-          <b>黑貓錢莊 (大額週轉)</b>
-          <div style="font-size:10px; color:#aaa; margin:2px 0;">快速撥款 NT$ ${(baseLoanAmount * 1.5).toLocaleString()}</div>
-          <button class="ios-btn danger" style="padding:6px; font-size:12px; margin:0;" onclick="requestLoan('黑貓錢莊', ${Math.floor(baseLoanAmount * 1.5)}, 0.5)">立即申貸</button>
-        </div>
-      `;
+      if (state.day >= 3) {
+        platforms.push({ name: "鴻海極速融資", amount: 200000 + (state.day * 25000), rate: 0.50 + Math.floor((state.day - 1) / 2) * 0.10 });
+      }
+      if (state.day >= 6) {
+        platforms.push({ name: "兄弟發圓夢金", amount: 300000 + (state.day * 30000), rate: 0.60 + Math.floor((state.day - 1) / 2) * 0.10 });
+      }
+
+      html += `<p style="font-size:11px; color:#aaa; margin-top:0;">地下融資借貸平台（每隔一天催繳，利率隨天數遞增）：</p>`;
+      
+      platforms.forEach(p => {
+        let isBorrowed = state.borrowedPlatforms.includes(p.name);
+        html += `
+          <div style="background:#2c2c2e; padding:10px; border-radius:10px; margin-bottom:8px; opacity:${isBorrowed?0.5:1};">
+            <b>${p.name} (利率 ${Math.round(p.rate * 100)}%)</b>
+            <div style="font-size:10px; color:#aaa; margin:2px 0;">可貸金額 NT$ ${p.amount.toLocaleString()}</div>
+            <button class="ios-btn ${isBorrowed?'':'success'}" style="padding:6px; font-size:12px; margin:0;" ${isBorrowed?'disabled':''} onclick="requestLoan('${p.name}', ${p.amount}, ${p.rate})">
+              ${isBorrowed ? '已借過（不得重複借貸）' : '立即申貸'}
+            </button>
+          </div>
+        `;
+      });
     } else if (appId === 'ig') {
       html += `
         <div style="background:#1a1a1a; border-radius:12px; padding:10px; border:1px solid #333;">
@@ -429,7 +443,7 @@
     
     let html = `
       <div class="app-nav-bar">
-        <span style="font-weight:600; font-size:15px;">${c.avatar}${c.name}</span>
+        <span style="font-weight:600; font-size:15px;">${c.avatar} ${c.name}</span>
         <span onclick="this.closest('.app-view').remove()" style="color:#00b900; cursor:pointer; font-weight:600;">返回</span>
       </div>
       <div class="app-body" id="chat-box" style="display:flex; flex-direction:column; gap:8px;">
@@ -456,7 +470,6 @@
     screen.appendChild(view);
   }
 
-  // 付款失敗顯示餘額不足與錯誤音效
   function payBill() {
     let screen = document.getElementById("phone-screen");
     if (state.cash < state.currentBill.amount) {
@@ -467,4 +480,291 @@
         errPopup.innerHTML = `
           <div style="font-size:36px; margin-bottom:8px;">❌</div>
           <div style="font-size:16px; font-weight:bold; color:#ff3b30; margin-bottom:4px;">餘額不足！</div>
-          <div style="font-size:1
+          <div style="font-size:12px; color:#ddd;">帳戶現金不足以支付 ${state.currentBill.name}</div>
+        `;
+        screen.appendChild(errPopup);
+        setTimeout(() => errPopup.remove(), 1800);
+      }
+      return;
+    }
+
+    state.cash -= state.currentBill.amount;
+    state.currentBill.paid = true;
+    playSound('success-pay');
+
+    if (screen) {
+      let popup = document.createElement("div");
+      popup.className = "success-popup";
+      popup.innerHTML = `
+        <div style="font-size:36px; margin-bottom:8px;">🎉</div>
+        <div style="font-size:16px; font-weight:bold; color:#34c759; margin-bottom:4px;">支付成功！</div>
+        <div style="font-size:12px; color:#ddd;">已完成 ${state.currentBill.name}</div>
+      `;
+      screen.appendChild(popup);
+      setTimeout(() => popup.remove(), 1600);
+    }
+
+    closeApp();
+    openApp('futurePay');
+    updateUI();
+  }
+
+  function installCasino() {
+    if (state.casinoInstalled) return;
+    alert("📲 「橘哥娛樂城 App」安裝完成！已新增至手機桌面。");
+    state.casinoInstalled = true;
+    let icon = document.getElementById("casino-app-icon");
+    if (icon) icon.style.display = "flex";
+    closeApp();
+    updateUI();
+  }
+
+  function installLoan() {
+    if (state.loanInstalled) return;
+    alert("📲 「借貸錢莊 App」安裝完成！已新增至手機桌面。");
+    state.loanInstalled = true;
+    let icon = document.getElementById("loan-app-icon");
+    if (icon) icon.style.display = "flex";
+    closeApp();
+    updateUI();
+  }
+
+  function playSlotAnimation(amount) {
+    if (amount <= 0 || state.cash < amount) {
+      alert("現金不足！");
+      return;
+    }
+
+    let r1 = document.getElementById("reel-1");
+    let r2 = document.getElementById("reel-2");
+    let r3 = document.getElementById("reel-3");
+    let resEl = document.getElementById("gamble-res");
+    if (!r1 || !r2 || !r3 || !resEl) return;
+
+    r1.className = "slot-reel-inner spinning";
+    r2.className = "slot-reel-inner spinning";
+    r3.className = "slot-reel-inner spinning";
+    resEl.innerText = "旋轉中...";
+    playSound('spin');
+
+    setTimeout(() => {
+      let isWin = false;
+      let winProbability = 0.72; 
+
+      if (amount === 10000) {
+        winProbability = 0.70; 
+      } else if (amount === 50000) {
+        winProbability = 0.20; 
+      } else if (amount === state.cash && amount > 50000) {
+        winProbability = 0.10; 
+      } else if (state.day >= 10) {
+        winProbability = 0.25; 
+      }
+
+      isWin = Math.random() < winProbability;
+
+      r1.className = "slot-reel-inner";
+      r2.className = "slot-reel-inner";
+      r3.className = "slot-reel-inner";
+
+      if (isWin) {
+        r1.innerText = "7️⃣"; r2.innerText = "7️⃣"; r3.innerText = "7️⃣";
+        let win = Math.floor(amount * 1.5);
+        state.cash += win;
+        resEl.style.color = "#34c759";
+        resEl.innerText = `🎉 中大獎！贏得 NT$ ${win.toLocaleString()}`;
+        playSound('win');
+      } else {
+        r1.innerText = "🍒"; r2.innerText = "💎"; r3.innerText = "7️⃣";
+        state.cash -= amount;
+        resEl.style.color = "#ff3b30";
+        resEl.innerText = `😢 未中獎，損失 NT$ ${amount.toLocaleString()}`;
+        playSound('lose');
+        let frame = document.getElementById("phone-frame");
+        if (frame) {
+          frame.classList.add("shake");
+          setTimeout(() => frame.classList.remove("shake"), 400);
+        }
+      }
+
+      state.spinsToday++;
+      
+      let liveCashEl = document.getElementById("casino-live-cash");
+      if (liveCashEl) liveCashEl.innerText = `NT$ ${state.cash.toLocaleString()}`;
+      
+      updateUI();
+
+      if (state.cash < 10000 && !state.loanInstalled && state.casinoInstalled) {
+        setTimeout(() => {
+          state.contacts.friend.unread++;
+          state.contacts.friend.messages.push({
+            sender: "friend",
+            text: "兄弟，看你現金快見底了？別擔心！我都在這個『借貸錢莊 App』拿週轉金，三秒撥款，快載來借錢翻盤！",
+            voice: "兄弟，看你現金快見底了？我都在這個借貸錢莊拿週轉金，快載來借錢翻盤！",
+            isLoanLink: true
+          });
+          triggerNotification("好友阿偉", "兄弟，看你現金快見底了？我都在這個『借貸錢莊』...", "friend");
+          updateUI();
+        }, 600);
+      }
+
+    }, 1200);
+  }
+
+  function requestLoan(name, amount, rate) {
+    if (state.borrowedPlatforms.includes(name)) {
+      alert("此平台您已經借過貸款，同一間不得重複借貸！");
+      return;
+    }
+
+    let screen = document.getElementById("phone-screen");
+    if (!screen) return;
+
+    let modal = document.createElement("div");
+    modal.className = "face-verify-modal";
+    modal.innerHTML = `
+      <div style="font-size:36px; margin-bottom:10px;">📸</div>
+      <h3 style="color:#fff; margin-bottom:6px;">面容身份審核</h3>
+      <p id="verify-text" style="font-size:13px; color:#ff9500; margin-bottom:20px;">請確認眼鏡是否有摘除，以進行人臉識別解鎖</p>
+      <button class="ios-btn success" id="snap-btn" onclick="startCameraSnap('${name}', ${amount}, ${rate})">點擊拍照按鈕</button>
+    `;
+    screen.appendChild(modal);
+  }
+
+  function startCameraSnap(name, amount, rate) {
+    let textEl = document.getElementById("verify-text");
+    let btnEl = document.getElementById("snap-btn");
+    btnEl.style.display = "none";
+
+    let count = 3;
+    textEl.style.fontSize = "24px";
+    textEl.style.color = "#00ffcc";
+    textEl.innerText = count;
+
+    let timer = setInterval(() => {
+      count--;
+      if (count > 0) {
+        textEl.innerText = count;
+      } else {
+        clearInterval(timer);
+        textEl.innerText = "✅ 核准完成！";
+        playSound('win');
+
+        setTimeout(() => {
+          let modal = document.querySelector(".face-verify-modal");
+          if (modal) modal.remove();
+
+          alert(`✅ 審核通過！「${name}」已成功撥款 NT$ ${amount.toLocaleString()} 至您的「未來支付」。`);
+          state.loans.push({ name: name, amount: amount, rate: rate, dayBorrowed: state.day });
+          state.borrowedPlatforms.push(name);
+          state.cash += amount;
+
+          state.contacts.loanAd1 = { name: "速速發小額貸款", avatar: "💸", unread: 1, messages: [{ sender: "loanAd1", text: "【秒撥款通知】恭喜您獲得信用額度提升，點擊立即撥款！", voice: "恭喜您獲得信用額度提升，點擊立即撥款！" }] };
+          triggerNotification("速速發小額貸款", "恭喜您獲得信用額度提升，點擊立即撥款！", "loanAd1");
+
+          closeApp();
+          updateUI();
+        }, 1000);
+      }
+    }, 1000);
+  }
+
+  function nextDay() {
+    if (state.casinoInstalled && state.spinsToday < 10) {
+      playSound('error');
+      let spinsLeft = Math.max(0, 10 - state.spinsToday);
+      alert(`【今日任務未完成】轉輪盤十次尚未完成！(還需轉 ${spinsLeft} 次)`);
+      return;
+    }
+    if (!state.currentBill.paid) {
+      playSound('error');
+      alert(`【財務未完成】今天必須在「未來支付」繳納「${state.currentBill.name}」NT$ ${state.currentBill.amount.toLocaleString()}！`);
+      return;
+    }
+
+    let screen = document.getElementById("phone-screen");
+    if (screen) {
+      let overlay = document.createElement("div");
+      overlay.className = "day-transition-overlay";
+      overlay.innerHTML = `<h1 style="font-size:28px; color:#fff; font-weight:300;">第 ${state.day + 1} 天</h1>`;
+      screen.appendChild(overlay);
+      setTimeout(() => overlay.remove(), 1800);
+    }
+
+    state.day++;
+    state.spinsToday = 0;
+
+    if (state.day === 8) {
+      setTimeout(() => alert("🎉 恭喜您達成 VIP 4！已為您開啟『梭哈 (All-in)』功能鍵！"), 2000);
+    }
+
+    if (state.day === 10) {
+      state.contacts.wife.unread++;
+      state.contacts.wife.messages.push({
+        sender: "wife",
+        text: "老公！討債的人...黑衣人怎麼會突然跑到我們家裡來撒冥紙恐嚇要錢！天啊...他們剛剛竟然直接把小朋友帶走了！你到底惹到誰了？！",
+        voice: "老公！黑衣人跑到我們家裡來撒冥紙，把小朋友帶走了！你到底惹到誰了！"
+      });
+      triggerNotification("老婆", "黑衣人跑到我們家裡來，把小朋友帶走了！", "wife");
+    }
+
+    // 每隔一天（間隔 2 天）進行貸款催繳與利息滾動
+    let totalLoanAmount = 0;
+    state.loans.forEach(l => {
+      let daysPassed = state.day - l.dayBorrowed;
+      if (daysPassed > 0 && daysPassed % 2 === 0) {
+        l.amount = Math.floor(l.amount * (1 + l.rate));
+      }
+      totalLoanAmount += l.amount;
+    });
+
+    if (state.loans.length > 0) {
+      setTimeout(() => {
+        state.contacts.loanSys = { name: "地下融資催收處", avatar: "⚠️", unread: 1, messages: [{ sender: "loanSys", text: `【每隔兩日貸款催繳】您目前高利貸總欠款因利率滾動已達 NT$ ${totalLoanAmount.toLocaleString()}，請盡速還款！`, voice: `高利貸總欠款已達新台幣 ${totalLoanAmount.toLocaleString()} 元，請盡速還款！` }] };
+        triggerNotification("地下融資催收處", `高利貸總欠款已達 NT$ ${totalLoanAmount.toLocaleString()}！`, "loanSys");
+        updateUI();
+      }, 1000);
+    }
+
+    if (dailyConfig[state.day]) {
+      state.currentBill = { name: dailyConfig[state.day].bill.name, amount: dailyConfig[state.day].bill.amount, paid: false };
+      
+      if (dailyConfig[state.day].wife && state.day !== 10) {
+        state.contacts.wife.unread++;
+        state.contacts.wife.messages.push({ sender: "wife", text: dailyConfig[state.day].wife, voice: dailyConfig[state.day].wife });
+        triggerNotification("老婆", dailyConfig[state.day].wife, "wife");
+      }
+      if (dailyConfig[state.day].child) {
+        state.contacts.child.unread++;
+        state.contacts.child.messages.push({ sender: "child", text: dailyConfig[state.day].child, voice: dailyConfig[state.day].child });
+        triggerNotification("小孩", dailyConfig[state.day].child, "child");
+      }
+    } else {
+      state.currentBill = { name: "日常生活雜費與利息分期", amount: 7000, paid: false };
+    }
+
+    if (state.day === 2) {
+      state.contacts.friend.unread++;
+      state.contacts.friend.messages.push({
+        sender: "friend",
+        text: "欸兄弟！我最近在『橘哥娛樂城』爽賺翻了！連結發你，趕快上車！",
+        voice: "欸兄弟！我最近在橘哥娛樂城爽賺翻了！連結發你，趕快上車！",
+        isCasinoLink: true
+      });
+      triggerNotification("好友阿偉", "欸兄弟！我最近在『橘哥娛樂城』爽賺翻了！...", "friend");
+    }
+
+    if (state.day > state.maxDays) {
+      alert("【悲劇結局：家破人亡】\n\n因沉迷線上博弈與地下高利貸，你不但輸光了積蓄、氣死至親，妻子也帶著孩子絕望離去。面對排山倒海的債務與黑衣人的暴力逼債，你在冰冷的房間中留下一封遺書，結束了一生。\n\n警語：回頭是岸，遠離賭博，珍惜摯愛。");
+      location.reload();
+      return;
+    }
+
+    updateUI();
+  }
+
+  updateUI();
+</script>
+
+</body>
+</html>
