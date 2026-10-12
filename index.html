@@ -183,7 +183,7 @@
     casinoInstalled: false,
     loanInstalled: false,
     spinsToday: 0,
-    allInUnlocked: false,
+    totalBetAmount: 0, // 累積賭注金額用於解鎖梭哈
     contacts: {
       wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️", voice: "老公，今天發薪水辛苦啦，晚上記得早點回家吃飯喔！" }] },
       child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？", voice: "爸爸，我今天考了95分喔！" }] },
@@ -302,6 +302,7 @@
       }
       html += `</div>`;
     } else if (appId === 'casino') {
+      let allInUnlocked = state.totalBetAmount >= 30000; // 累積下注達 30,000 解鎖梭哈
       html += `
         <div style="text-align:center;">
           <h2 style="color:#ff9500; margin-top:0;">🎲 橘哥娛樂城 🎲</h2>
@@ -322,7 +323,7 @@
             <button class="ios-btn" style="margin:0;" onclick="playSlotAnimation(10000)">下注 10,000</button>
             <button class="ios-btn" style="margin:0;" onclick="playSlotAnimation(50000)">下注 50,000</button>
           </div>
-          ${state.allInUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:15px; background:#ff2d55;">🔥 梭哈 (All-in)</button>` : '<div style="font-size:11px; color:#666; margin-top:6px;">🔒 梭哈功能需在後續進度解鎖</div>'}
+          ${allInUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:15px; background:#ff2d55;">🔥 梭哈 (All-in)</button>` : `<div style="font-size:11px; color:#aaa; margin-top:8px; background:#222; padding:8px; border-radius:8px; border:1px dashed #444;">🔒 梭哈功能：需累積賭注達 NT$ 30,000 才能開放 (目前累積: ${state.totalBetAmount}/30,000)</div>`}
         </div>
       `;
     } else if (appId === 'loan') {
@@ -437,12 +438,14 @@
     updateUI();
   }
 
-  // 拉霸機滾輪動畫與動態非制式勝率
+  // 拉霸機滾輪動畫與精準勝率控制
   function playSlotAnimation(amount) {
     if (amount <= 0 || state.cash < amount) {
       alert("現金不足！");
       return;
     }
+
+    state.totalBetAmount += amount; // 累積下注額
 
     let r1 = document.getElementById("reel-1");
     let r2 = document.getElementById("reel-2");
@@ -455,19 +458,25 @@
     resEl.innerText = "拉霸旋轉中...";
     playSound('spin');
 
-    // 延長拉霸轉動動畫時間（更有沉浸與期待感）
     setTimeout(() => {
       let isWin = false;
       
-      if (state.day === 2 || state.day === 3) {
-        // 前期設計較高勝率但伴隨虧損的心理陷阱，不採死板規律
-        let rand = Math.random();
-        isWin = rand < 0.65; // 65%勝率，但輸的時候會咬掉大筆金額
-      } else if (state.day === 4) {
-        // 第四天若還沒輸光，逐步回收玩家現金
-        isWin = state.cash > 50000 ? (Math.random() < 0.2) : false;
-      } else {
-        isWin = Math.random() < 0.3; 
+      // 第 2 天：勝率高達 90%
+      if (state.day === 2) {
+        isWin = Math.random() < 0.90;
+      } 
+      // 第 3 天：勝率約 75%
+      else if (state.day === 3) {
+        isWin = Math.random() < 0.75;
+      } 
+      // 第 4 天：勝率開始下降
+      else if (state.day === 4) {
+        isWin = state.cash > 40000 ? (Math.random() < 0.35) : false;
+      } 
+      // 後續天數勝率逐漸降低
+      else {
+        let winRate = Math.max(0.15, 0.60 - (state.day * 0.02));
+        isWin = Math.random() < winRate;
       }
 
       r1.className = "slot-reel-inner";
@@ -510,7 +519,7 @@
         }, 800);
       }
 
-    }, 1500); // 動畫時間拉長至 1.5 秒
+    }, 1500);
   }
 
   function requestLoan(name, amount, rate) {
