@@ -230,7 +230,8 @@
     currentBill: { name: "家庭伙食與日常用品費", amount: 3000, paid: false },
     loans: [],
     borrowedPlatforms: [],
-    everBorrowedLoan: false, // 紀錄是否曾借過高利貸
+    everBorrowedLoan: false,
+    loanWarningCount: 0, // 紀錄警告點擊次數
     casinoInstalled: false,
     loanInstalled: false,
     spinsToday: 0,
@@ -613,6 +614,7 @@
     }
     state.cash -= l.amount;
     state.loans.splice(idx, 1);
+    state.loanWarningCount = 0; // 還清後歸零警告數
     playSound('success-pay');
 
     let popup = document.createElement("div");
@@ -761,7 +763,7 @@
           let dueDay = state.day + 2;
           alert("✅ 審核通過！「" + name + "」已撥款 NT$ " + amount.toLocaleString() + "。\n💡 提醒：今天借款不用今天還，本利和共 NT$ " + totalRepay.toLocaleString() + " 將於【第 " + dueDay + " 天（過兩天）】到期需在未來支付還款！");
           
-          state.everBorrowedLoan = true; // 標記曾借過高利貸
+          state.everBorrowedLoan = true;
           state.loans.push({ name: name, amount: totalRepay, dueDay: dueDay });
           state.borrowedPlatforms.push(name);
           state.cash += amount;
@@ -830,12 +832,36 @@
       return;
     }
 
-    // 檢查是否有逾期或到期未還的高利貸
+    // 檢查是否有高利貸欠款
     let overdueLoans = state.loans.filter(l => state.day >= l.dueDay);
-    if (overdueLoans.length > 0) {
+    if (state.loans.length > 0) {
       let totalDebt = state.loans.reduce((sum, l) => sum + l.amount, 0);
-      showBadEnding(totalDebt);
-      return;
+
+      // 第一次提醒：提醒還款
+      if (state.loanWarningCount === 0) {
+        state.loanWarningCount++;
+        playSound('error-pay');
+        alert("⚠️【還款提醒】您目前尚有 " + state.loans.length + " 筆高利貸欠款（總金額：NT$ " + totalDebt.toLocaleString() + "）。\n請前往「未來支付」點選【還款】！");
+        openApp('futurePay');
+        return;
+      } 
+      // 第二次提醒：提醒可去借貸 App 借更高額度（以債養債）
+      else if (state.loanWarningCount === 1) {
+        state.loanWarningCount++;
+        playSound('error-pay');
+        alert("💡【借貸提醒】若您手頭現金不足以償還高利貸：\n可以點擊「借貸錢莊 App」並點選【🔄 刷新更高額度】來獲取更龐大的資金進行還款（以債養債）！");
+        if (state.loanInstalled) {
+          openApp('loan');
+        } else {
+          openApp('futurePay');
+        }
+        return;
+      } 
+      // 第三次提醒（若依然逾期且沒處理才觸發死亡結局）
+      else if (overdueLoans.length > 0) {
+        showBadEnding(totalDebt);
+        return;
+      }
     }
 
     let mask = document.getElementById("transition-mask");
@@ -849,6 +875,7 @@
       state.spinsToday = 0;
       state.loanVisitCount++;
       state.borrowedPlatforms = [];
+      state.loanWarningCount = 0; // 新一天重置警告次數
 
       if (state.day === 2) {
         state.contacts.friend.unread++;
@@ -860,7 +887,6 @@
         triggerNotification("好友阿偉", "我在『橘哥娛樂城』爽賺翻了！點擊下方安裝檔...", "friend");
       }
 
-      // 第 10 天劇情分歧：僅有「當前有欠高利貸」才會觸發黑衣人與抓小孩劇情
       if (state.day === 10 && state.loans.length > 0) {
         state.contacts.wife.unread++;
         state.contacts.wife.messages.push({ sender: "wife", text: "老公！黑衣人跑到我們家裡來撒冥紙，把小朋友帶走了！你到底惹到誰了！" });
@@ -878,7 +904,6 @@
         state.currentBill = { name: "日常雜費與利息分期", amount: 7000, paid: false };
       }
 
-      // 第 15 天結束判定
       if (state.day > state.maxDays) {
         mask.classList.remove("active");
         if (state.loans.length === 0) {
