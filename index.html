@@ -46,7 +46,6 @@
     .chat-bubble.incoming { background: #262628; color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
     .chat-bubble.outgoing { background: #007aff; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
     .chat-bubble.link-box { background: #1e3a5f; border: 1px solid #007aff; cursor: pointer; }
-    .unread-dot { width: 8px; height: 8px; background: #ff3b30; border-radius: 50%; display: inline-block; margin-left: 6px; }
     .voice-msg-btn { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; cursor: pointer; width: fit-content; margin-top: 4px; }
 
     /* 過場天數牆 */
@@ -102,7 +101,7 @@
         </div>
       </div>
 
-      <!-- 底部日常任務卡片 (動態抓馬開銷與 10 次旋轉強制要求) -->
+      <!-- 底部日常任務卡片 -->
       <div style="background: rgba(0,0,0,0.6); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.15); margin-top: auto;">
         <h3 id="story-title" style="margin:0 0 4px 0; color:#00ffcc; font-size:15px;">第 1 天</h3>
         <div id="day-task-status" style="font-size:11px; color:#ff9500; margin-bottom:6px; line-height:1.3;">📌 今日待辦：查看家人訊息，在未來支付處理日常開銷。</div>
@@ -115,48 +114,54 @@
 
 <script>
   // 音效系統 (Web Audio API)
-  const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtxInstance = null;
   function playSound(type) {
-    if (AudioCtx.state === 'suspended') AudioCtx.resume();
-    const osc = AudioCtx.createOscillator();
-    const gain = AudioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(AudioCtx.destination);
+    try {
+      if (!audioCtxInstance) audioCtxInstance = new AudioCtx();
+      if (audioCtxInstance.state === 'suspended') audioCtxInstance.resume();
+      const osc = audioCtxInstance.createOscillator();
+      const gain = audioCtxInstance.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtxInstance.destination);
 
-    if (type === 'msg') {
-      osc.frequency.setValueAtTime(587.33, AudioCtx.currentTime); 
-      osc.frequency.setValueAtTime(880, AudioCtx.currentTime + 0.1); 
-      gain.gain.setValueAtTime(0.2, AudioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.3);
-      osc.start(); osc.stop(AudioCtx.currentTime + 0.3);
-    } else if (type === 'spin') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, AudioCtx.currentTime);
-      gain.gain.setValueAtTime(0.1, AudioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.1);
-      osc.start(); osc.stop(AudioCtx.currentTime + 0.1);
-    } else if (type === 'win') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, AudioCtx.currentTime);
-      osc.frequency.setValueAtTime(659.25, AudioCtx.currentTime + 0.1);
-      osc.frequency.setValueAtTime(783.99, AudioCtx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.3, AudioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.5);
-      osc.start(); osc.stop(AudioCtx.currentTime + 0.5);
-    } else if (type === 'lose') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(200, AudioCtx.currentTime);
-      osc.frequency.setValueAtTime(100, AudioCtx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.3, AudioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.4);
-      osc.start(); osc.stop(AudioCtx.currentTime + 0.4);
-    } else if (type === 'error') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(130, AudioCtx.currentTime);
-      osc.frequency.setValueAtTime(90, AudioCtx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.3, AudioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, AudioCtx.currentTime + 0.35);
-      osc.start(); osc.stop(AudioCtx.currentTime + 0.35);
+      if (type === 'msg') {
+        osc.frequency.setValueAtTime(587.33, audioCtxInstance.currentTime); 
+        osc.frequency.setValueAtTime(880, audioCtxInstance.currentTime + 0.1); 
+        gain.gain.setValueAtTime(0.2, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.3);
+      } else if (type === 'spin') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtxInstance.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.1);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.1);
+      } else if (type === 'win') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, audioCtxInstance.currentTime);
+        osc.frequency.setValueAtTime(659.25, audioCtxInstance.currentTime + 0.1);
+        osc.frequency.setValueAtTime(783.99, audioCtxInstance.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.3, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.5);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.5);
+      } else if (type === 'lose') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, audioCtxInstance.currentTime);
+        osc.frequency.setValueAtTime(100, audioCtxInstance.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.4);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.4);
+      } else if (type === 'error') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, audioCtxInstance.currentTime);
+        osc.frequency.setValueAtTime(90, audioCtxInstance.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.35);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.35);
+      }
+    } catch(e) {
+      console.log("Audio skipped", e);
     }
   }
 
@@ -167,8 +172,6 @@
       utterance.lang = 'zh-TW';
       utterance.rate = 1.0;
       window.speechSynthesis.speak(utterance);
-    } else {
-      alert(`🔊 語音播放: "${text}"`);
     }
   }
 
@@ -206,36 +209,42 @@
   };
 
   function updateUI() {
-    document.getElementById("day-badge").innerText = `第 ${state.day} 天`;
-    document.getElementById("story-title").innerText = `第 ${state.day} 天`;
+    try {
+      document.getElementById("day-badge").innerText = `第 ${state.day} 天`;
+      document.getElementById("story-title").innerText = `第 ${state.day} 天`;
 
-    // 計算總未讀數
-    let totalUnread = 0;
-    for (let k in state.contacts) { totalUnread += state.contacts[k].unread; }
-    let badgeEl = document.getElementById("total-msg-badge");
-    if (totalUnread > 0) {
-      badgeEl.innerText = totalUnread;
-      badgeEl.style.display = "block";
-    } else {
-      badgeEl.style.display = "none";
-    }
+      let totalUnread = 0;
+      for (let k in state.contacts) { totalUnread += state.contacts[k].unread; }
+      let badgeEl = document.getElementById("total-msg-badge");
+      if (badgeEl) {
+        if (totalUnread > 0) {
+          badgeEl.innerText = totalUnread;
+          badgeEl.style.display = "block";
+        } else {
+          badgeEl.style.display = "none";
+        }
+      }
 
-    // 任務指示器
-    let taskEl = document.getElementById("day-task-status");
-    let spinsLeft = Math.max(0, 10 - state.spinsToday);
-    let billStatus = state.currentBill.paid ? "✅ 今日帳單已繳納" : `⏳ 待繳: ${state.currentBill.name} (NT$ ${state.currentBill.amount.toLocaleString()})`;
+      let taskEl = document.getElementById("day-task-status");
+      if (taskEl) {
+        let spinsLeft = Math.max(0, 10 - state.spinsToday);
+        let billStatus = state.currentBill.paid ? "✅ 今日帳單已繳納" : `⏳ 待繳: ${state.currentBill.name} (NT$ ${state.currentBill.amount.toLocaleString()})`;
 
-    if (state.day === 2 && !state.casinoInstalled) {
-      taskEl.innerText = "📌 今日待辦：查看訊息安裝「橘哥娛樂城」 | " + billStatus;
-    } else {
-      taskEl.innerText = `📌 今日待辦：轉輪盤 (${spinsLeft}/10次) | ${billStatus}`;
+        if (state.day === 2 && !state.casinoInstalled) {
+          taskEl.innerText = "📌 今日待辦：查看訊息安裝「橘哥娛樂城」 | " + billStatus;
+        } else {
+          taskEl.innerText = `📌 今日待辦：轉輪盤 (${spinsLeft}/10次) | ${billStatus}`;
+        }
+      }
+    } catch(e) {
+      console.log("UI update error", e);
     }
   }
 
-  // 即時跳出 iOS 頂部通知
   function triggerNotification(senderName, text, contactKey) {
     playSound('msg');
     let screen = document.getElementById("phone-screen");
+    if (!screen) return;
     let notif = document.createElement("div");
     notif.className = "ios-notification";
     notif.innerHTML = `
@@ -255,6 +264,7 @@
 
   function openApp(appId) {
     let screen = document.getElementById("phone-screen");
+    if (!screen) return;
     let existing = document.getElementById("active-app-view");
     if (existing) existing.remove();
 
@@ -281,7 +291,7 @@
         
         <div style="background:#1c1c1e; padding:14px; border-radius:14px; border:1px solid #333;">
           <div style="font-size:13px; font-weight:bold; margin-bottom:6px;">💳 今日必須繳納項目</div>
-          {!state.currentBill.paid ? `
+          ${!state.currentBill.paid ? `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
               <div><div style="font-size:12px;">${state.currentBill.name}</div><div style="font-size:10px; color:#aaa;">金額: NT$ ${state.currentBill.amount.toLocaleString()}</div></div>
               <button class="ios-btn danger" style="width:auto; padding:6px 10px; font-size:11px; margin:0;" onclick="payBill()">手動繳納</button>
@@ -309,8 +319,8 @@
       }
       html += `</div>`;
     } else if (appId === 'casino') {
-      let canHighStake = state.day >= 5; // 第五天解鎖一萬與五萬
-      let allInUnlocked = state.day >= 10; // 鎖卡鍵/梭哈必須達天數 10 天才開啟
+      let canHighStake = state.day >= 5; 
+      let allInUnlocked = state.day >= 10; 
 
       html += `
         <div style="text-align:center;">
@@ -386,6 +396,7 @@
     updateUI();
 
     let screen = document.getElementById("phone-screen");
+    if (!screen) return;
     let view = document.createElement("div");
     view.className = "app-view";
     
@@ -420,7 +431,7 @@
 
   function payBill() {
     if (state.cash < state.currentBill.amount) {
-      alert("【餘額不足】未來支付現金不足，無法繳納今日帳單！請注意信用破產風險。");
+      alert("【餘額不足】未來支付現金不足，無法繳納今日帳單！");
       return;
     }
     state.cash -= state.currentBill.amount;
@@ -435,7 +446,8 @@
     if (state.casinoInstalled) return;
     alert("📲 「橘哥娛樂城 App」安裝完成！已新增至手機桌面。");
     state.casinoInstalled = true;
-    document.getElementById("casino-app-icon").style.display = "flex";
+    let icon = document.getElementById("casino-app-icon");
+    if (icon) icon.style.display = "flex";
     closeApp();
     updateUI();
   }
@@ -444,12 +456,12 @@
     if (state.loanInstalled) return;
     alert("📲 「借貸錢莊 App」安裝完成！已新增至手機桌面。");
     state.loanInstalled = true;
-    document.getElementById("loan-app-icon").style.display = "flex";
+    let icon = document.getElementById("loan-app-icon");
+    if (icon) icon.style.display = "flex";
     closeApp();
     updateUI();
   }
 
-  // 拉霸機滾輪動畫與前五天上限限制
   function playSlotAnimation(amount) {
     if (state.day <= 5 && amount > 5000) {
       alert("【防沉迷限制】前 5 天平台規範：單筆投注金額不得超過 NT$ 5,000！");
@@ -464,6 +476,7 @@
     let r2 = document.getElementById("reel-2");
     let r3 = document.getElementById("reel-3");
     let resEl = document.getElementById("gamble-res");
+    if (!r1 || !r2 || !r3 || !resEl) return;
 
     r1.className = "slot-reel-inner spinning";
     r2.className = "slot-reel-inner spinning";
@@ -476,7 +489,7 @@
       
       if (state.day === 2) isWin = Math.random() < 0.85;
       else if (state.day === 3) isWin = Math.random() < 0.70;
-      else if (state.day === 4) isWin = Math.random() < 0.35; // 第四天強制輸光鋪墊
+      else if (state.day === 4) isWin = Math.random() < 0.35; 
       else {
         let winRate = Math.max(0.12, 0.50 - (state.day * 0.015));
         isWin = Math.random() < winRate;
@@ -499,8 +512,11 @@
         resEl.style.color = "#ff3b30";
         resEl.innerText = `😢 未中獎，損失 NT$ ${amount.toLocaleString()}`;
         playSound('lose');
-        document.getElementById("phone-frame").classList.add("shake");
-        setTimeout(() => document.getElementById("phone-frame").classList.remove("shake"), 400);
+        let frame = document.getElementById("phone-frame");
+        if (frame) {
+          frame.classList.add("shake");
+          setTimeout(() => frame.classList.remove("shake"), 400);
+        }
       }
 
       state.spinsToday++;
@@ -508,7 +524,6 @@
       if (liveCashEl) liveCashEl.innerText = `NT$ ${state.cash.toLocaleString()}`;
       updateUI();
 
-      // 條件觸發：未滿 1 萬或第四天強制推播網貸
       if ((state.cash < 10000 || state.day === 4) && !state.loanInstalled && state.casinoInstalled) {
         setTimeout(() => {
           state.contacts.friend.unread++;
@@ -535,7 +550,6 @@
     }
   }
 
-  // 進入下一天 (每日 10 次強制旋轉、帳單扣款、網貸利息日日提醒與抓馬結局編排)
   function nextDay() {
     if (state.casinoInstalled && state.spinsToday < 10) {
       playSound('error');
@@ -548,17 +562,18 @@
       return;
     }
 
-    // 過場天數動畫
-    let overlay = document.createElement("div");
-    overlay.className = "day-transition-overlay";
-    overlay.innerHTML = `<h1 style="font-size:28px; color:#fff; font-weight:300;">第 ${state.day + 1} 天</h1>`;
-    document.getElementById("phone-screen").appendChild(overlay);
-    setTimeout(() => overlay.remove(), 1800);
+    let screen = document.getElementById("phone-screen");
+    if (screen) {
+      let overlay = document.createElement("div");
+      overlay.className = "day-transition-overlay";
+      overlay.innerHTML = `<h1 style="font-size:28px; color:#fff; font-weight:300;">第 ${state.day + 1} 天</h1>`;
+      screen.appendChild(overlay);
+      setTimeout(() => overlay.remove(), 1800);
+    }
 
     state.day++;
     state.spinsToday = 0;
 
-    // 計算高利貸利滾利，並發送每日網貸欠款提醒
     let totalLoanAmount = 0;
     state.loans.forEach(l => {
       l.amount = Math.floor(l.amount * (1 + l.rate));
@@ -573,14 +588,12 @@
       }, 1000);
     }
 
-    // 指派隔日帳單
     if (dailyBillsConfig[state.day]) {
       state.currentBill = { name: dailyBillsConfig[state.day].name, amount: dailyBillsConfig[state.day].amount, paid: false };
     } else {
       state.currentBill = { name: "日常生活雜費與利息分期", amount: 7000, paid: false };
     }
 
-    // 劇情事件推進
     if (state.day === 2) {
       state.contacts.friend.unread++;
       state.contacts.friend.messages.push({
@@ -630,6 +643,7 @@
     updateUI();
   }
 
+  // 初始化執行
   updateUI();
 </script>
 
