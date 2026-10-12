@@ -108,7 +108,7 @@
         </div>
       </div>
 
-      <!-- 底部日常任務卡片 (待辦事項精確倒數) -->
+      <!-- 底部日常任務卡片 -->
       <div style="background: rgba(0,0,0,0.6); border-radius: 16px; padding: 12px; border: 1px solid rgba(255,255,255,0.15); margin-top: auto;">
         <h3 id="story-title" style="margin:0 0 4px 0; color:#00ffcc; font-size:15px;">第 1 天</h3>
         <div id="day-task-status" style="font-size:11px; color:#ff9500; margin-bottom:6px; line-height:1.3;">📌 待辦事項：處理今日帳單開銷。</div>
@@ -120,7 +120,6 @@
 </div>
 
 <script>
-  // 音效系統 (Web Audio API 模擬 Line 通知與多巴胺音效)
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   let audioCtxInstance = null;
   function playSound(type) {
@@ -133,9 +132,8 @@
       gain.connect(audioCtxInstance.destination);
 
       if (type === 'line') {
-        // Line 經典雙響通知音效
-        osc.frequency.setValueAtTime(1046.5, audioCtxInstance.currentTime); // C6
-        osc.frequency.setValueAtTime(1318.5, audioCtxInstance.currentTime + 0.1); // E6
+        osc.frequency.setValueAtTime(1046.5, audioCtxInstance.currentTime); 
+        osc.frequency.setValueAtTime(1318.5, audioCtxInstance.currentTime + 0.1); 
         gain.gain.setValueAtTime(0.2, audioCtxInstance.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.25);
         osc.start(); osc.stop(audioCtxInstance.currentTime + 0.25);
@@ -192,7 +190,6 @@
     }
   }
 
-  // 30 天豐富日常與對話語音庫
   const dailyConfig = {
     1: { bill: { name: "家庭伙食與日常用品費", amount: 3000 }, wife: "老公，今天晚餐做了你愛吃的糖醋排骨，快回來吃喔！", child: "爸爸今天下班會買科學麵給我嗎？" },
     2: { bill: { name: "水電與瓦斯基本費", amount: 2500 }, wife: "老公，阿偉好像一直傳訊息給你，你們最近在聊什麼投資啊？感覺怪怪的。", child: "爸爸，學校老師說要繳班費 500 元喔！" },
@@ -235,6 +232,7 @@
     casinoInstalled: false,
     loanInstalled: false,
     spinsToday: 0,
+    vipAlertShown: false,
     contacts: {
       wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️", voice: "老公，今天發薪水辛苦啦，晚上記得早點回家吃飯喔！" }] },
       child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？", voice: "爸爸，我今天考了95分喔！" }] },
@@ -320,7 +318,6 @@
         </div>
       `;
 
-      // 只有在開始有借款之後才顯示地下高利貸累積總欠款
       if (state.loans.length > 0) {
         html += `
           <div style="background:#1c1c1e; padding:14px; border-radius:14px; margin-bottom:10px; border:1px solid #333;">
@@ -361,12 +358,18 @@
       }
       html += `</div>`;
     } else if (appId === 'casino') {
-      let canHighStake = state.day >= 4; // 第四天開放 10,000 與 50,000
-      let allInUnlocked = state.day >= 10; 
+      let canHighStake = state.day >= 4; // 第四天直接開放 1 萬與 5 萬下注
+      let allInUnlocked = state.day >= 8; // 第八天解鎖梭哈
+
+      // 首次進入提醒 VIP 1
+      if (!state.vipAlertShown) {
+        state.vipAlertShown = true;
+        setTimeout(() => alert("🔔 提示：您目前只打 VIP 1，所以可以增加投注的金額！"), 300);
+      }
 
       html += `
         <div style="text-align:center;">
-          <div style="font-size:11px; color:#aaa; margin-bottom:2px;">今日目標：轉輪盤</div>
+          <div style="font-size:10px; color:#ff9500; margin-bottom:2px;">今日目標：轉輪盤</div>
           <h2 style="color:#ff9500; margin-top:0; font-size:16px;">🎲 橘哥娛樂城</h2>
           <p style="font-size:11px; color:#aaa; margin:4px 0;">即時餘額：<b id="casino-live-cash" style="color:#34c759;">NT$ ${state.cash.toLocaleString()}</b></p>
           
@@ -388,7 +391,7 @@
             ` : `<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:6px; border-radius:6px;">🔒 下注 1萬/5萬額度：需至第 4 天解鎖</div>`}
           </div>
 
-          ${allInUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:14px; background:#ff2d55; padding:10px;">🔥 梭哈 (All-in)</button>` : `<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:8px; border-radius:8px; border:1px dashed #444;">🔒 鎖卡鍵：需達成遊戲天數 10 天才開啟 (目前第 ${state.day} 天)</div>`}
+          ${allInUnlocked ? `<button class="ios-btn danger" onclick="playSlotAnimation(state.cash)" style="font-size:14px; background:#ff2d55; padding:10px;">🔥 梭哈 (All-in)</button>` : `<div style="grid-column: span 2; font-size:10px; color:#aaa; background:#222; padding:8px; border-radius:8px; border:1px dashed #444;">🔒 梭哈鍵：需至第 8 天解鎖 (目前第 ${state.day} 天)</div>`}
         </div>
       `;
     } else if (appId === 'loan') {
@@ -524,10 +527,10 @@
     updateUI();
   }
 
-  // 轉盤邏輯與動態勝率計算
+  // 轉盤勝率調整：前兩天 90%，第三天 70% 贏，第四天起 30% 贏
   function playSlotAnimation(amount) {
-    if (state.day <= 5 && amount > 5000) {
-      alert("【防沉迷限制】前 5 天平台規範：單筆投注金額不得超過 NT$ 5,000！");
+    if (state.day <= 3 && amount > 5000 && state.day >= 4 == false) {
+      alert("【防沉迷限制】前 3 天平台規範：單筆投注金額不得超過 NT$ 5,000！");
       return;
     }
     if (amount <= 0 || state.cash < amount) {
@@ -549,15 +552,13 @@
 
     setTimeout(() => {
       let isWin = false;
-      let totalSpinsGlobal = (state.day - 1) * 10 + state.spinsToday + 1;
 
-      // 前三次轉盤保證獲勝
-      if (totalSpinsGlobal <= 3) {
-        isWin = true;
+      if (state.day === 1 || state.day === 2) {
+        isWin = Math.random() < 0.90; // 第一、二天勝率 90%
+      } else if (state.day === 3) {
+        isWin = Math.random() < 0.70; // 第三天 70% 贏、30% 輸
       } else {
-        // 後面大約維持 60% 勝率、40% 輸，越後面輸的機率越高
-        let winProbability = Math.max(0.15, 0.60 - (state.day * 0.015));
-        isWin = Math.random() < winProbability;
+        isWin = Math.random() < 0.30; // 第四天起 30% 贏、70% 輸
       }
 
       r1.className = "slot-reel-inner";
@@ -591,7 +592,6 @@
       
       updateUI();
 
-      // 當現金低於 1,0000 且安裝了娛樂城後，阿偉傳訊息推薦網貸平台
       if (state.cash < 10000 && !state.loanInstalled && state.casinoInstalled) {
         setTimeout(() => {
           state.contacts.friend.unread++;
@@ -609,7 +609,6 @@
     }, 1200);
   }
 
-  // 面容審核與拍照提示
   function requestLoan(name, amount, rate) {
     let screen = document.getElementById("phone-screen");
     if (!screen) return;
@@ -652,7 +651,6 @@
           state.loans.push({ name: name, amount: amount, rate: rate });
           state.cash += amount;
 
-          // 借網貸後開始推送網貸平台廣告
           state.contacts.loanAd1 = { name: "速速發小額貸款", avatar: "💸", unread: 1, messages: [{ sender: "loanAd1", text: "【秒撥款通知】恭喜您獲得 50,000 元信用額度，免保人、免照會，點擊立即撥款！", voice: "恭喜您獲得五萬元信用額度，點擊立即撥款！" }] };
           triggerNotification("速速發小額貸款", "恭喜您獲得 50,000 元信用額度，點擊立即撥款！", "loanAd1");
 
@@ -687,6 +685,11 @@
 
     state.day++;
     state.spinsToday = 0;
+
+    // 第八天自動彈窗提示解鎖 VIP 4 與梭哈鍵
+    if (state.day === 8) {
+      setTimeout(() => alert("🎉 恭喜您達成 VIP 4！已為您開啟『梭哈 (All-in)』功能鍵！"), 2000);
+    }
 
     let totalLoanAmount = 0;
     state.loans.forEach(l => {
