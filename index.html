@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>橘哥娛樂城：15天 iOS 警世模擬器（玩法規則修復版）</title>
+  <title>橘哥娛樂城：15天 iOS 警世模擬器（全押無上限+坦白結局版）</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; user-select: none; }
@@ -133,7 +133,7 @@
 
 <script>
   /*
-   * 橘哥娛樂城：15天 iOS 警世模擬器（玩法規則正確修正版）
+   * 橘哥娛樂城：15天 iOS 警世模擬器（全押無上限與坦白好結局版）
    * © 2026 LIL_TUC888. All Rights Reserved.
    */
   let audioCtxInstance = null;
@@ -263,6 +263,7 @@
     spinsToday: 0,
     loanVisitCount: 0,
     loanBatchIndex: 0,
+    isAllInBet: false, // 標記是否為 ALL IN 押注
     contacts: {
       wife: { name: "老婆", avatar: "👩", unread: 1, messages: [{ sender: "wife", text: "老公，今天發薪水辛苦啦！晚上煮了你愛吃的紅燒肉，記得早點回家喔 ❤️" }] },
       child: { name: "小孩", avatar: "👦", unread: 1, messages: [{ sender: "child", text: "爸爸！我今天考了 95 分喔！可以帶一杯奶茶給我嗎？" }] },
@@ -275,7 +276,7 @@
     bet: 0,
     dealerHand: [],
     playerHand: [],
-    gameStatus: 'betting' // 'betting', 'dealing', 'playing', 'dealer_turn', 'ended'
+    gameStatus: 'betting'
   };
 
   function updateUI() {
@@ -464,20 +465,24 @@
     let felt = document.createElement("div");
     felt.className = "table-felt";
     
-    let dealerVal = (bjState.gameStatus === 'playing' || bjState.gameStatus === 'dealing') ? '?' : getHandValue(bjState.dealerHand);
+    let dHandInfo = getHandValueDetails(bjState.dealerHand);
+    let dealerValText = (bjState.gameStatus === 'playing' || bjState.gameStatus === 'dealing') ? '?' : (dHandInfo.val + ' 點' + (dHandInfo.hasAce ? ' (A可當11/1點)' : ''));
+    
     felt.innerHTML += '<div class="hand-section">' +
                       '<div class="cards-row" id="dealer-cards"></div>' +
-                      '<div id="dealer-hand-val" style="font-size:12px; color:#ff9500; font-weight:bold; margin-top:2px;">🎩 莊家點數：' + dealerVal + ' 點</div>' +
+                      '<div id="dealer-hand-val" style="font-size:12px; color:#ff9500; font-weight:bold; margin-top:2px;">🎩 莊家點數：' + dealerValText + '</div>' +
                       '</div>';
 
     let statusText = "請選擇籌碼下注";
     if (isMaxSpins) statusText = "🌙 時間太晚囉！請明天繼續賺大錢！";
     felt.innerHTML += '<div id="bj-status-msg" style="font-weight:bold; font-size:13px; min-height:22px; color:#ffd700;">' + statusText + '</div>';
 
-    let playerVal = getHandValue(bjState.playerHand);
+    let pHandInfo = getHandValueDetails(bjState.playerHand);
+    let playerValText = pHandInfo.val + ' 點' + (pHandInfo.hasAce ? ' (' + pHandInfo.aceHint + ')' : '');
+
     felt.innerHTML += '<div class="hand-section">' +
                       '<div class="cards-row" id="player-cards"></div>' +
-                      '<div id="player-hand-val" style="font-size:12px; color:#00ffcc; font-weight:bold; margin-top:2px;">👤 玩家點數：' + playerVal + ' 點</div>' +
+                      '<div id="player-hand-val" style="font-size:12px; color:#00ffcc; font-weight:bold; margin-top:2px;">👤 玩家點數：' + playerValText + '</div>' +
                       '</div>';
 
     mainBox.appendChild(felt);
@@ -490,7 +495,6 @@
                           '🌙 時間太晚囉！今天已經玩了 30 局。<br>請點擊下方「結束今天，進入明天」明天繼續賺大錢！' +
                           '</div>';
     } else if (bjState.gameStatus === 'betting') {
-      let isDay4 = state.day >= 4;
       ctrlBox.innerHTML = '<div style="font-size:11px; color:#aaa; margin-bottom:6px;">請選擇下注金額：</div>';
       
       let grid = document.createElement("div");
@@ -500,42 +504,39 @@
       btn1000.className = "ios-btn";
       btn1000.style.margin = "0";
       btn1000.innerText = "下注 $1,000";
-      btn1000.onclick = () => { if(isBusy()) return; startBlackjackGame(1000); };
+      btn1000.onclick = () => { if(isBusy()) return; startBlackjackGame(1000, false); };
       grid.appendChild(btn1000);
 
       let btn5000 = document.createElement("button");
       btn5000.className = "ios-btn";
       btn5000.style.margin = "0";
       btn5000.innerText = "下注 $5,000";
-      btn5000.onclick = () => { if(isBusy()) return; startBlackjackGame(5000); };
+      btn5000.onclick = () => { if(isBusy()) return; startBlackjackGame(5000, false); };
       grid.appendChild(btn5000);
 
-      if (isDay4) {
-        let btn10000 = document.createElement("button");
-        btn10000.className = "ios-btn";
-        btn10000.style.margin = "0";
-        btn10000.innerText = "下注 $10,000";
-        btn10000.onclick = () => { if(isBusy()) return; startBlackjackGame(10000); };
-        grid.appendChild(btn10000);
+      let btn10000 = document.createElement("button");
+      btn10000.className = "ios-btn";
+      btn10000.style.margin = "0";
+      btn10000.innerText = "下注 $10,000";
+      btn10000.onclick = () => { if(isBusy()) return; startBlackjackGame(10000, false); };
+      grid.appendChild(btn10000);
 
-        let btn50000 = document.createElement("button");
-        btn50000.className = "ios-btn";
-        btn50000.style.margin = "0";
-        btn50000.innerText = "下注 $50,000";
-        btn50000.onclick = () => { if(isBusy()) return; startBlackjackGame(50000); };
-        grid.appendChild(btn50000);
-      }
+      let btn50000 = document.createElement("button");
+      btn50000.className = "ios-btn";
+      btn50000.style.margin = "0";
+      btn50000.innerText = "下注 $50,000";
+      btn50000.onclick = () => { if(isBusy()) return; startBlackjackGame(50000, false); };
+      grid.appendChild(btn50000);
 
       ctrlBox.appendChild(grid);
 
-      if (isDay4) {
-        let btnAllIn = document.createElement("button");
-        btnAllIn.className = "ios-btn danger";
-        btnAllIn.style.marginTop = "6px";
-        btnAllIn.innerText = "🔥 梭哈下注上限 ($100,000)";
-        btnAllIn.onclick = () => { if(isBusy()) return; startBlackjackGame(Math.min(100000, state.cash)); };
-        ctrlBox.appendChild(btnAllIn);
-      }
+      // ALL IN 全押按鈕（開放所有現金全押，勝率 5%）
+      let btnAllIn = document.createElement("button");
+      btnAllIn.className = "ios-btn danger";
+      btnAllIn.style.marginTop = "6px";
+      btnAllIn.innerText = "🔥 ALL IN 全押全部現金 (NT$ " + state.cash.toLocaleString() + ")";
+      btnAllIn.onclick = () => { if(isBusy()) return; startBlackjackGame(state.cash, true); };
+      ctrlBox.appendChild(btnAllIn);
 
     } else if (bjState.gameStatus === 'playing') {
       let grid = document.createElement("div");
@@ -625,7 +626,8 @@
     return { suit: s, val: v };
   }
 
-  function getHandValue(hand) {
+  // 計算手牌點數與 A 牌動態提示 (1點 / 11點)
+  function getHandValueDetails(hand) {
     let val = 0;
     let aces = 0;
     hand.forEach(c => {
@@ -633,34 +635,37 @@
       else if (['K', 'Q', 'J'].includes(c.val)) { val += 10; }
       else { val += parseInt(c.val); }
     });
+
+    let isAceSoft = false;
     while (val > 21 && aces > 0) {
       val -= 10;
       aces--;
+      isAceSoft = true;
     }
-    return val;
+
+    let hasAceInHand = hand.some(c => c.val === 'A');
+    let aceHint = "A 算 11 點";
+    if (hasAceInHand && (isAceSoft || val === 21)) {
+      aceHint = "A 算 1 點";
+    }
+
+    return { val: val, hasAce: hasAceInHand, aceHint: aceHint };
   }
 
-  // 依日數調控機率抽牌（甜頭期讓玩家容易抽到好牌，後續讓莊家容易拿到大牌）
-  function drawRiggedCardForPlayer() {
-    let card = drawRandomCard();
-    if (state.day === 2 || state.day === 3) {
-      // 甜頭期：若抽到小牌，高機率重新抽一張大牌 (10, J, Q, K, A)
-      if (['2', '3', '4', '5', '6', '7'].includes(card.val) && Math.random() < 0.85) {
-        card = drawRandomCard();
-      }
-    }
-    return card;
+  function getHandValue(hand) {
+    return getHandValueDetails(hand).val;
   }
 
-  function startBlackjackGame(amount) {
+  function startBlackjackGame(amount, isAllIn) {
     if (state.spinsToday >= 30) return;
-    if (state.cash < amount) {
+    if (state.cash < amount || amount <= 0) {
       alert("現金不足！");
       return;
     }
 
     state.cash -= amount;
     bjState.bet = amount;
+    state.isAllInBet = isAllIn;
     bjState.gameStatus = 'dealing';
     bjState.playerHand = [];
     bjState.dealerHand = [];
@@ -668,9 +673,9 @@
     let appBody = document.querySelector(".app-body");
     if (appBody) renderBlackjackApp(appBody);
 
-    let pCard1 = drawRiggedCardForPlayer();
+    let pCard1 = drawRandomCard();
     let dCard1 = drawRandomCard();
-    let pCard2 = drawRiggedCardForPlayer();
+    let pCard2 = drawRandomCard();
     let dCard2 = drawRandomCard();
 
     setTimeout(() => { playSound('card'); bjState.playerHand.push(pCard1); renderCards(); updateHandValueText(); }, 300);
@@ -692,17 +697,21 @@
   }
 
   function updateHandValueText() {
-    let pVal = getHandValue(bjState.playerHand);
-    let dVal = (bjState.gameStatus === 'playing' || bjState.gameStatus === 'dealing') ? '?' : getHandValue(bjState.dealerHand);
+    let pHandInfo = getHandValueDetails(bjState.playerHand);
+    let dHandInfo = getHandValueDetails(bjState.dealerHand);
+
+    let dValText = (bjState.gameStatus === 'playing' || bjState.gameStatus === 'dealing') ? '?' : (dHandInfo.val + ' 點');
+    let pValText = pHandInfo.val + ' 點' + (pHandInfo.hasAce ? ' (' + pHandInfo.aceHint + ')' : '');
+
     let dEl = document.getElementById("dealer-hand-val");
     let pEl = document.getElementById("player-hand-val");
-    if (dEl) dEl.innerText = '🎩 莊家點數：' + dVal + ' 點';
-    if (pEl) pEl.innerText = '👤 玩家點數：' + pVal + ' 點';
+    if (dEl) dEl.innerText = '🎩 莊家點數：' + dValText;
+    if (pEl) pEl.innerText = '👤 玩家點數：' + pValText;
   }
 
   function playerHit() {
     playSound('card');
-    bjState.playerHand.push(drawRiggedCardForPlayer());
+    bjState.playerHand.push(drawRandomCard());
     renderCards();
     updateHandValueText();
 
@@ -717,7 +726,7 @@
     playSound('card');
     state.cash -= bjState.bet;
     bjState.bet *= 2;
-    bjState.playerHand.push(drawRiggedCardForPlayer());
+    bjState.playerHand.push(drawRandomCard());
     renderCards();
     updateHandValueText();
 
@@ -751,21 +760,29 @@
     }, 800);
   }
 
-  // 正確的 21 點勝負邏輯判定（嚴格遵循點數比大小原則）
   function evaluateFinalHand() {
     let pVal = getHandValue(bjState.playerHand);
     let dVal = getHandValue(bjState.dealerHand);
 
+    // 如果是 ALL IN 全押，勝率強制限制為僅 5% 機率贏
+    if (state.isAllInBet) {
+      let isAllInWin = Math.random() < 0.05;
+      if (!isAllInWin && pVal <= 21 && dVal <= 21 && pVal > dVal) {
+        // 全押失敗時，莊家強行獲得更高的牌
+        dVal = Math.min(21, pVal + 1);
+      }
+    }
+
     if (pVal > 21) {
       endBlackjackGame('bust');
     } else if (dVal > 21) {
-      endBlackjackGame('win'); // 莊家爆牌，玩家贏
+      endBlackjackGame('win');
     } else if (pVal > dVal) {
-      endBlackjackGame('win'); // 玩家點數大，玩家贏
+      endBlackjackGame('win');
     } else if (pVal === dVal) {
-      endBlackjackGame('push'); // 點數相同，平局退回籌碼
+      endBlackjackGame('push');
     } else {
-      endBlackjackGame('lose'); // 莊家點數大 (例如 19 比 15)，莊家贏
+      endBlackjackGame('lose');
     }
   }
 
@@ -813,6 +830,7 @@
       playSound('lose');
     }
 
+    state.isAllInBet = false;
     updateUI();
 
     let appBody = document.querySelector(".app-body");
@@ -953,8 +971,34 @@
       body.appendChild(b);
     });
 
+    // 若玩家已經接觸賭博且在老婆的聊天室，顯示向老婆坦白的對話提示選項
+    if (contactKey === 'wife' && state.casinoInstalled) {
+      let confessBox = document.createElement("div");
+      confessBox.style.cssText = "background:rgba(255,149,0,0.15); border:2px dashed #ff9500; border-radius:14px; padding:12px; margin-top:12px; text-align:center;";
+      confessBox.innerHTML = '<div style="font-size:12px; color:#ff9500; font-weight:bold; margin-bottom:8px;">❓ 是否要向老婆坦白你在娛樂城賭博？</div>' +
+                             '<div style="display:flex; gap:8px;">' +
+                             '<button class="ios-btn success" style="margin:0; font-size:12px; padding:8px;" onclick="confessToWife()">是，誠實坦白</button>' +
+                             '<button class="ios-btn danger" style="margin:0; font-size:12px; padding:8px;" onclick="this.parentElement.parentElement.remove()">隱瞞不說</button>' +
+                             '</div>';
+      body.appendChild(confessBox);
+    }
+
     view.appendChild(body);
     screen.appendChild(view);
+  }
+
+  // 觸發向老婆坦白事件 -> 導向趁早收手的救贖好結局
+  function confessToWife() {
+    playSound('line');
+    state.contacts.wife.messages.push({ sender: 'user', text: "老婆...對不起，我這幾天偷用了娛樂城 App 玩賭博..." });
+    state.contacts.wife.messages.push({ sender: 'wife', text: "老公...謝謝你願意對我誠實。只要你現在願意立刻收手，刪掉 APP，我們一家人平平安安在一起，沒有什麼困難是過不去的！❤️" });
+    
+    closeApp();
+    openChat('wife');
+
+    setTimeout(() => {
+      showRedemptionEnding();
+    }, 2500);
   }
 
   function promptInstallCasino() {
@@ -1123,6 +1167,24 @@
         }, 1000);
       }
     }, 1000);
+  }
+
+  // 救贖好結局：坦白並陪伴家人
+  function showRedemptionEnding() {
+    playSound('win');
+    let phoneFrame = document.getElementById("phone-frame");
+    if (!phoneFrame) return;
+    let endDiv = document.createElement("div");
+    endDiv.className = "ending-overlay";
+    endDiv.innerHTML = '<div style="font-size:48px; margin-bottom:12px;">🏡❤️</div>' +
+                       '<h2 style="color:#34c759; font-size:22px; margin-bottom:10px;">【好結局：趁早收手，陪伴家人】</h2>' +
+                       '<p style="font-size:13px; color:#00ffcc; margin-bottom:16px; line-height:1.5;">你選擇對家人坦白並及時收手！<br>及時卸載非法博弈 App，避開了高利貸與滾雪球債務的無限深淵。</p>' +
+                       '<p style="font-size:12px; color:#ccc; line-height:1.6; margin-bottom:20px;">老婆原諒了你，孩子開心地牽著你的手。雖然沒有靠賭博一夜暴富，但踏實工作、陪伴家人，才是世界上最珍貴的財富。</p>' +
+                       '<div style="background:rgba(52,199,89,0.2); border:1px solid #34c759; padding:12px; border-radius:12px; font-size:13px; font-weight:bold; color:#fff; line-height:1.5;">' +
+                       '💡 浪子回頭金不換！<br>遠離非法博弈，珍惜身邊最愛你的家人！' +
+                       '</div>' +
+                       '<button class="ios-btn success" style="margin-top:20px;" onclick="location.reload()">重新體驗模擬器</button>';
+    phoneFrame.appendChild(endDiv);
   }
 
   function showBadEnding(totalDebt) {
