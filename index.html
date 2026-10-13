@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>橘哥娛樂城：15天 iOS 警世模擬器（最終版）</title>
+  <title>橘哥娛樂城：15天 iOS 警世模擬器（最終優化版）</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; user-select: none; }
@@ -29,6 +29,10 @@
     .error-popup { background: rgba(30,10,10,0.95); border: 2px solid #ff3b30; }
     @keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
+    /* 多巴胺贏錢綠色彈窗特效 */
+    .dopamine-win-popup { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.88); border: 3px solid #34c759; border-radius: 24px; padding: 20px 30px; text-align: center; z-index: 550; box-shadow: 0 0 35px #34c759; animation: dopaminePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+    @keyframes dopaminePop { 0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.15); } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
     .face-verify-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 400; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; animation: fadeIn 0.3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -48,15 +52,17 @@
     .ios-btn.success { background: #34c759; }
     .ios-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
 
-    /* 21點撲克牌桌面樣式 */
-    .table-felt { background: #0b5345; border-radius: 16px; padding: 12px; border: 3px solid #145a32; margin: 8px 0; box-shadow: inset 0 0 15px #000; text-align: center; position: relative; }
-    .cards-row { display: flex; justify-content: center; gap: 6px; min-height: 65px; margin: 6px 0; align-items: center; }
-    .playing-card { width: 42px; height: 60px; background: #fff; color: #000; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; padding: 4px; font-weight: bold; font-size: 13px; box-shadow: 0 3px 6px rgba(0,0,0,0.4); animation: cardDeal 0.3s ease-out; position: relative; }
+    /* 21點撲克牌桌面樣式（加大上下分開距離） */
+    .table-felt { background: #0b5345; border-radius: 18px; padding: 16px 12px; border: 3px solid #145a32; margin: 8px 0; box-shadow: inset 0 0 15px #000; text-align: center; position: relative; display: flex; flex-direction: column; gap: 14px; }
+    .hand-section { background: rgba(0,0,0,0.25); border-radius: 12px; padding: 8px 4px; border: 1px dashed rgba(255,255,255,0.15); }
+    .cards-row { display: flex; justify-content: center; gap: 8px; min-height: 65px; margin: 6px 0; align-items: center; flex-wrap: wrap; }
+    
+    /* 發牌/加牌動畫特效 */
+    .playing-card { width: 44px; height: 62px; background: #fff; color: #000; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; padding: 4px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); animation: cardDeal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
     .playing-card.red { color: #d00000; }
     .playing-card.back { background: linear-gradient(135deg, #b71c1c, #880e4f); border: 2px solid #fff; color: transparent; }
-    @keyframes cardDeal { from { transform: translateY(-30px) scale(0.5); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    @keyframes cardDeal { from { transform: translateY(-40px) scale(0.3); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
 
-    /* 賭博任務條樣式 */
     .task-progress-box { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; font-size: 11px; }
     .progress-bar-bg { width: 100%; height: 8px; background: #3a3a3c; border-radius: 4px; overflow: hidden; margin-top: 4px; }
     .progress-bar-fill { height: 100%; background: #ff9500; width: 0%; transition: width 0.3s, background-color 0.3s; }
@@ -73,7 +79,7 @@
     .app-watermark { text-align: center; font-size: 8.5px; color: rgba(255, 255, 255, 0.28); letter-spacing: 0.3px; padding: 5px 4px 2px 4px; font-family: -apple-system, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   </style>
 </head>
-<body>
+<body onclick="initAudioOnUserGesture()">
 
 <div class="iphone-frame" id="phone-frame">
   <div class="day-transition-mask" id="transition-mask">
@@ -130,21 +136,28 @@
 
 <script>
   /*
-   * 橘哥娛樂城：15天 iOS 警世模擬器（21點專業最終版）
+   * 橘哥娛樂城：15天 iOS 警世模擬器（獲勝特效與發牌動畫升級版）
    * © 2026 LIL_TUC888. All Rights Reserved.
    */
-  const _0x4f12=['\x53\x74\x61\x74\x65','\x61\x75\x64\x69\x6f\x43\x74\x78\x49\x6e\x73\x74\x61\x6e\x63\x65','\x41\x75\x64\x69\x6f\x43\x6f\x6e\x74\x65\x78\x74','\x77\x65\x62\x6b\x69\x74\x41\x75\x64\x69\x6f\x43\x6f\x6e\x74\x65\x78\x74','\x73\x74\x61\x74\x65','\x73\x75\x73\x70\x65\x6e\x64\x65\x64','\x72\x65\x73\x75\x6d\x65','\x63\x72\x65\x61\x74\x65\x4f\x73\x63\x69\x6c\x6c\x61\x74\x6f\x72','\x63\x72\x65\x61\x74\x65\x47\x61\x69\x6e','\x63\x6f\x6e\x6e\x65\x63\x74','\x64\x65\x73\x74\x69\x6e\x61\x74\x69\x6f\x6e','\x63\x75\x72\x72\x65\x6e\x74\x54\x69\x6d\x65','\x66\x72\x65\x71\x75\x65\x6e\x63\x79','\x73\x65\x74\x56\x61\x6c\x75\x65\x41\x74\x54\x69\x6d\x65','\x67\x61\x69\x6e','\x65\x78\x70\x6f\x6e\x65\x6e\x74\x69\x61\x6c\x52\x61\x6d\x70\x54\x6f\x56\x61\x6c\x75\x65\x41\x74\x54\x69\x6d\x65','\x73\x74\x61\x72\x74','\x73\x74\x6f\x70'];
-
-  eval(function(p,a,c,k,e,r){e=function(c){return c.toString(36)};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('0 3=1;0 4=2;',5,5,'var|0x1|0x2|_0x2a1|_0x3f4'.split('|'),0,{}));
-
   let audioCtxInstance = null;
-  function playSound(type) {
+
+  function initAudioOnUserGesture() {
     try {
       if (!audioCtxInstance) {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         audioCtxInstance = new AudioCtx();
       }
-      if (audioCtxInstance.state === 'suspended') audioCtxInstance.resume();
+      if (audioCtxInstance && audioCtxInstance.state === 'suspended') {
+        audioCtxInstance.resume();
+      }
+    } catch(e) {}
+  }
+
+  function playSound(type) {
+    try {
+      initAudioOnUserGesture();
+      if (!audioCtxInstance) return;
+
       const osc = audioCtxInstance.createOscillator();
       const gain = audioCtxInstance.createGain();
       osc.connect(gain);
@@ -157,23 +170,22 @@
         osc.start(); osc.stop(audioCtxInstance.currentTime + 0.04);
       } else if (type === 'card') {
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(400, audioCtxInstance.currentTime);
-        osc.frequency.setValueAtTime(200, audioCtxInstance.currentTime + 0.05);
-        gain.gain.setValueAtTime(0.1, audioCtxInstance.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.06);
-        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.06);
+        osc.frequency.setValueAtTime(500, audioCtxInstance.currentTime);
+        osc.frequency.setValueAtTime(250, audioCtxInstance.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.15, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.07);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.07);
       } else if (type === 'win') {
-        // 多巴胺高頻獎勵音效
+        // 多巴胺錢幣與勝利高頻聲
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, audioCtxInstance.currentTime);
-        osc.frequency.setValueAtTime(659.25, audioCtxInstance.currentTime + 0.08);
-        osc.frequency.setValueAtTime(783.99, audioCtxInstance.currentTime + 0.16);
-        osc.frequency.setValueAtTime(1046.50, audioCtxInstance.currentTime + 0.24);
-        gain.gain.setValueAtTime(0.3, audioCtxInstance.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.5);
-        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.5);
+        osc.frequency.setValueAtTime(987.77, audioCtxInstance.currentTime);
+        osc.frequency.setValueAtTime(1318.51, audioCtxInstance.currentTime + 0.08);
+        osc.frequency.setValueAtTime(1567.98, audioCtxInstance.currentTime + 0.16);
+        osc.frequency.setValueAtTime(2093.00, audioCtxInstance.currentTime + 0.24);
+        gain.gain.setValueAtTime(0.35, audioCtxInstance.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtxInstance.currentTime + 0.6);
+        osc.start(); osc.stop(audioCtxInstance.currentTime + 0.6);
       } else if (type === 'lose' || type === 'error-pay') {
-        // 低頻失落音效 + 畫面震動
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(160, audioCtxInstance.currentTime);
         osc.frequency.setValueAtTime(80, audioCtxInstance.currentTime + 0.15);
@@ -206,10 +218,12 @@
   function playVoice(text) {
     playSound('line');
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      let utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'zh-TW';
-      window.speechSynthesis.speak(utter);
+      try {
+        window.speechSynthesis.cancel();
+        let utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'zh-TW';
+        window.speechSynthesis.speak(utter);
+      } catch(e) {}
     }
   }
 
@@ -260,18 +274,19 @@
     }
   };
 
-  // 21點牌局狀態
   let bjState = {
     active: false,
     bet: 0,
     dealerHand: [],
     playerHand: [],
-    gameStatus: 'betting' // 'betting', 'playing', 'ended'
+    gameStatus: 'betting'
   };
 
   function updateUI() {
-    document.getElementById("day-badge").innerText = "第 " + state.day + " 天";
-    document.getElementById("story-title").innerText = "第 " + state.day + " 天";
+    let dayBadge = document.getElementById("day-badge");
+    let storyTitle = document.getElementById("story-title");
+    if (dayBadge) dayBadge.innerText = "第 " + state.day + " 天";
+    if (storyTitle) storyTitle.innerText = "第 " + state.day + " 天";
 
     let totalUnread = 0;
     for (let k in state.contacts) { totalUnread += state.contacts[k].unread; }
@@ -286,23 +301,25 @@
     }
 
     let taskEl = document.getElementById("day-task-status");
-    let billStatus = state.currentBill.paid ? "✅ 今日帳單已繳" : "⏳ 待繳: " + state.currentBill.name + " (NT$ " + state.currentBill.amount.toLocaleString() + ")";
-    
-    let dueCount = state.loans.filter(l => state.day >= l.dueDay).length;
-    let loanClearStatus = dueCount === 0 ? "✅ 無到期負債" : "⚠️ 有 " + dueCount + " 筆欠款今日到期！";
+    if (taskEl) {
+      let billStatus = state.currentBill.paid ? "✅ 今日帳單已繳" : "⏳ 待繳: " + state.currentBill.name + " (NT$ " + state.currentBill.amount.toLocaleString() + ")";
+      let dueCount = state.loans.filter(l => state.day >= l.dueDay).length;
+      let loanClearStatus = dueCount === 0 ? "✅ 無到期負債" : "⚠️ 有 " + dueCount + " 筆欠款今日到期！";
 
-    if (state.day === 1 || !state.casinoInstalled) {
-      taskEl.innerText = "📌 待辦事項：處理今日帳單開銷。| " + loanClearStatus;
-    } else {
-      let spinsLeft = Math.max(0, 10 - state.spinsToday);
-      let bjTaskStatus = state.spinsToday >= 10 ? "✅ 21點已達10次" : "📌 21點打滿10次(還差" + spinsLeft + "次)";
-      taskEl.innerText = bjTaskStatus + " | " + billStatus + " | " + loanClearStatus;
+      if (state.day === 1 || !state.casinoInstalled) {
+        taskEl.innerText = "📌 待辦事項：處理今日帳單開銷。| " + loanClearStatus;
+      } else {
+        let spinsLeft = Math.max(0, 10 - state.spinsToday);
+        let bjTaskStatus = state.spinsToday >= 10 ? "✅ 21點已達10次" : "📌 21點打滿10次(還差" + spinsLeft + "次)";
+        taskEl.innerText = bjTaskStatus + " | " + billStatus + " | " + loanClearStatus;
+      }
     }
   }
 
   function triggerNotification(senderName, text, contactKey) {
     playSound('line');
     let screen = document.getElementById("phone-screen");
+    if (!screen) return;
     let notif = document.createElement("div");
     notif.className = "ios-notification";
     notif.innerHTML = '<div style="font-size:11px; color:#00b900; margin-bottom:2px;">Line 訊息</div>' +
@@ -319,6 +336,7 @@
 
   function openApp(appId) {
     let screen = document.getElementById("phone-screen");
+    if (!screen) return;
     let existing = document.getElementById("active-app-view");
     if (existing) existing.remove();
 
@@ -342,7 +360,6 @@
                        '<div style="font-size:11px; color:#aaa;">未來支付 - 當前可用現金餘額</div>' +
                        '<div style="font-size:24px; font-weight:bold; color:' + cashColor + ';">NT$ ' + state.cash.toLocaleString() + '</div></div>';
 
-      // 依時效性分開顯示高利貸欄位
       let dueLoans = state.loans.filter(l => state.day >= l.dueDay);
       let pendingLoans = state.loans.filter(l => state.day < l.dueDay);
 
@@ -428,11 +445,9 @@
     screen.appendChild(view);
   }
 
-  // 渲染 21 點遊戲 APP
   function renderBlackjackApp(container) {
     container.innerHTML = "";
 
-    // 任務進度條
     let pct = Math.min(100, Math.round((state.spinsToday / 10) * 100));
     let isFinished = state.spinsToday >= 10;
     
@@ -449,26 +464,28 @@
     mainBox.innerHTML = '<h3 style="color:#ff9500; margin:0 0 4px 0;">♠️ 橘哥線上 21 點 ♣️</h3>' +
                         '<div style="font-size:12px; color:#aaa; margin-bottom:8px;">現金：<b id="bj-live-cash" style="color:#34c759;">NT$ ' + state.cash.toLocaleString() + '</b> | 目前下注：<b id="bj-live-bet" style="color:#ff9500;">NT$ ' + bjState.bet.toLocaleString() + '</b></div>';
 
-    // 21點桌面
+    // 21點桌面（莊家與玩家分區隔開）
     let felt = document.createElement("div");
     felt.className = "table-felt";
     
-    // 荷官區域
+    // 莊家區域
     let dealerVal = bjState.gameStatus === 'playing' ? '?' : getHandValue(bjState.dealerHand);
-    felt.innerHTML += '<div style="font-size:11px; color:#ccc;">莊家荷官 (' + dealerVal + ')</div>' +
-                      '<div class="cards-row" id="dealer-cards"></div>';
+    felt.innerHTML += '<div class="hand-section">' +
+                      '<div style="font-size:11px; color:#ff9500; font-weight:bold; margin-bottom:4px;">🎩 莊家荷官 (' + dealerVal + ')</div>' +
+                      '<div class="cards-row" id="dealer-cards"></div>' +
+                      '</div>';
 
-    // 提示結果欄
-    felt.innerHTML += '<div id="bj-status-msg" style="font-weight:bold; font-size:14px; min-height:22px; color:#ffd700; margin:4px 0;">請選擇籌碼下注</div>';
+    felt.innerHTML += '<div id="bj-status-msg" style="font-weight:bold; font-size:14px; min-height:22px; color:#ffd700;">請選擇籌碼下注</div>';
 
     // 玩家區域
     let playerVal = getHandValue(bjState.playerHand);
-    felt.innerHTML += '<div class="cards-row" id="player-cards"></div>' +
-                      '<div style="font-size:11px; color:#ccc;">玩家手牌 (' + playerVal + ')</div>';
+    felt.innerHTML += '<div class="hand-section">' +
+                      '<div class="cards-row" id="player-cards"></div>' +
+                      '<div style="font-size:11px; color:#00ffcc; font-weight:bold; margin-top:4px;">👤 玩家手牌 (' + playerVal + ')</div>' +
+                      '</div>';
 
     mainBox.appendChild(felt);
 
-    // 互動操作按鈕區
     let ctrlBox = document.createElement("div");
     ctrlBox.id = "bj-controls";
 
@@ -561,11 +578,9 @@
     mainBox.appendChild(ctrlBox);
     container.appendChild(mainBox);
 
-    // 繪製手牌
     renderCards();
   }
 
-  // 繪製卡牌
   function renderCards() {
     let dContainer = document.getElementById("dealer-cards");
     let pContainer = document.getElementById("player-cards");
@@ -595,7 +610,6 @@
     });
   }
 
-  // 生成撲克牌
   function drawRandomCard() {
     let suits = ['♠️', '♥️', '♣️', '♦️'];
     let vals = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -604,7 +618,6 @@
     return { suit: s, val: v };
   }
 
-  // 計算點數
   function getHandValue(hand) {
     let val = 0;
     let aces = 0;
@@ -620,7 +633,6 @@
     return val;
   }
 
-  // 開始 21 點牌局
   function startBlackjackGame(amount) {
     if (state.cash < amount) {
       alert("現金不足！");
@@ -631,35 +643,30 @@
     bjState.bet = amount;
     bjState.gameStatus = 'playing';
 
-    // 初始發牌：玩家2張，莊家2張
+    // 初始發牌音效與視覺發牌
     bjState.playerHand = [drawRandomCard(), drawRandomCard()];
     bjState.dealerHand = [drawRandomCard(), drawRandomCard()];
 
     let appBody = document.querySelector(".app-body");
     if (appBody) renderBlackjackApp(appBody);
 
-    // 檢查初始 Blackjack
     if (getHandValue(bjState.playerHand) === 21) {
       setTimeout(() => endBlackjackGame('win_bj'), 500);
     }
   }
 
-  // 玩家補牌 (Hit)
   function playerHit() {
     playSound('card');
     bjState.playerHand.push(drawRandomCard());
     renderCards();
 
     let pVal = getHandValue(bjState.playerHand);
-    let pValEl = document.querySelector(".table-felt div:nth-child(4)");
-    if (pValEl) pValEl.innerText = '玩家手牌 (' + pVal + ')';
 
     if (pVal > 21) {
       setTimeout(() => endBlackjackGame('bust'), 400);
     }
   }
 
-  // 玩家雙倍下注 (Double)
   function playerDouble() {
     if (state.cash < bjState.bet) return;
     playSound('card');
@@ -676,12 +683,10 @@
     }
   }
 
-  // 玩家停牌 (Stand) -> 莊家開牌補牌
   function playerStand() {
     bjState.gameStatus = 'ended';
     playSound('card');
 
-    // 莊家補牌至 17 點以上
     while (getHandValue(bjState.dealerHand) < 17) {
       bjState.dealerHand.push(drawRandomCard());
     }
@@ -691,12 +696,15 @@
     let pVal = getHandValue(bjState.playerHand);
     let dVal = getHandValue(bjState.dealerHand);
 
-    // 根據天數與下注額計算隨機調控勝率
+    // 天數勝率調控（第二天與第三天勝率提升至 98% 兩柱）
     let winProb = 0.5;
-    if (state.day <= 3) {
+    if (state.day === 2 || state.day === 3) {
+      winProb = 0.98;
+    } else if (state.day <= 3) {
       if (bjState.bet <= 1000) winProb = 0.90;
       else if (bjState.bet <= 5000) winProb = 0.70;
     } else {
+      // 第四天開始照原本勝率走
       if (bjState.bet <= 1000) winProb = 0.70;
       else if (bjState.bet <= 5000) winProb = 0.40;
       else if (bjState.bet <= 10000) winProb = 0.30;
@@ -716,7 +724,21 @@
     }
   }
 
-  // 結算 21 點遊戲
+  // 彈出多巴胺亮綠色勝利畫面
+  function showDopamineWinPopup(winAmount) {
+    let screen = document.getElementById("phone-screen");
+    if (!screen) return;
+
+    let pop = document.createElement("div");
+    pop.className = "dopamine-win-popup";
+    pop.innerHTML = '<div style="font-size:36px; margin-bottom:4px;">💸💰</div>' +
+                    '<div style="font-size:14px; color:#aaa; font-weight:bold;">恭喜贏得</div>' +
+                    '<div style="font-size:26px; font-weight:bold; color:#34c759; text-shadow:0 0 10px #34c759;">+NT$ ' + winAmount.toLocaleString() + '</div>';
+    screen.appendChild(pop);
+
+    setTimeout(() => pop.remove(), 1500);
+  }
+
   function endBlackjackGame(result) {
     bjState.gameStatus = 'ended';
     state.spinsToday++;
@@ -728,11 +750,13 @@
       state.cash += winAmt;
       if (statusMsg) { statusMsg.style.color = "#34c759"; statusMsg.innerText = "🎉 21點 (Blackjack)！贏得 NT$ " + winAmt.toLocaleString(); }
       playSound('win');
+      showDopamineWinPopup(winAmt);
     } else if (result === 'win') {
       let winAmt = bjState.bet * 2;
       state.cash += winAmt;
       if (statusMsg) { statusMsg.style.color = "#34c759"; statusMsg.innerText = "🎉 擊敗莊家！贏得 NT$ " + winAmt.toLocaleString(); }
       playSound('win');
+      showDopamineWinPopup(winAmt);
     } else if (result === 'push') {
       state.cash += bjState.bet;
       if (statusMsg) { statusMsg.style.color = "#ff9500"; statusMsg.innerText = "⚖️ 平局！退回籌碼 NT$ " + bjState.bet.toLocaleString(); }
@@ -750,7 +774,6 @@
     let appBody = document.querySelector(".app-body");
     if (appBody) renderBlackjackApp(appBody);
 
-    // 現金過低引誘借貸
     if (state.cash < 10000 && !state.loanInstalled && state.casinoInstalled) {
       setTimeout(() => {
         state.contacts.friend.unread++;
@@ -844,6 +867,7 @@
     updateUI();
 
     let screen = document.getElementById("phone-screen");
+    if (!screen) return;
     let view = document.createElement("div");
     view.className = "app-view";
 
@@ -909,6 +933,7 @@
 
   function payBill() {
     let screen = document.getElementById("phone-screen");
+    if (!screen) return;
     if (state.cash < state.currentBill.amount) {
       playSound('error-pay');
       let errPopup = document.createElement("div");
@@ -940,6 +965,7 @@
   function repayLoan(idx) {
     let l = state.loans[idx];
     let screen = document.getElementById("phone-screen");
+    if (!screen) return;
     if (state.cash < l.amount) {
       playSound('error-pay');
       let errPopup = document.createElement("div");
@@ -973,7 +999,8 @@
     if (state.casinoInstalled) return;
     alert("📲 「橘哥娛樂城 App」安裝完成！已新增至桌面。");
     state.casinoInstalled = true;
-    document.getElementById("casino-app-icon").style.display = "flex";
+    let icon = document.getElementById("casino-app-icon");
+    if (icon) icon.style.display = "flex";
     closeApp();
     updateUI();
   }
@@ -983,7 +1010,8 @@
     state.loanVisitCount++;
     alert("📲 「借貸錢莊 App」安裝完成！已新增至桌面。");
     state.loanInstalled = true;
-    document.getElementById("loan-app-icon").style.display = "flex";
+    let icon = document.getElementById("loan-app-icon");
+    if (icon) icon.style.display = "flex";
     closeApp();
     updateUI();
   }
@@ -1008,27 +1036,29 @@
     if (btnEl) btnEl.style.display = "none";
 
     let count = 3;
-    textEl.style.fontSize = "28px";
-    textEl.style.color = "#00ffcc";
-    textEl.innerText = count;
+    if (textEl) {
+      textEl.style.fontSize = "28px";
+      textEl.style.color = "#00ffcc";
+      textEl.innerText = count;
+    }
     playSound('click');
 
     let timer = setInterval(() => {
       count--;
       if (count > 0) {
-        textEl.innerText = count;
+        if (textEl) textEl.innerText = count;
         playSound('click');
       } else {
         clearInterval(timer);
         playSound('success-pay');
-        textEl.innerText = "✅ 核准完成！";
+        if (textEl) textEl.innerText = "✅ 核准完成！";
 
         setTimeout(() => {
           let modal = document.querySelector(".face-verify-modal");
           if (modal) modal.remove();
 
           let totalRepay = Math.floor(amount * (1 + rate));
-          let dueDay = state.day + 1; // 今日借明日還
+          let dueDay = state.day + 1;
           alert("✅ 審核通過！「" + name + "」已撥款 NT$ " + amount.toLocaleString() + "。\n💡 提醒：今日申貸當日免還，本利和共 NT$ " + totalRepay.toLocaleString() + " 將於【明日第 " + dueDay + " 天】到期清償！");
           
           state.everBorrowedLoan = true;
@@ -1054,6 +1084,7 @@
   function showBadEnding(totalDebt) {
     playSound('lose');
     let phoneFrame = document.getElementById("phone-frame");
+    if (!phoneFrame) return;
     let endDiv = document.createElement("div");
     endDiv.className = "ending-overlay";
     endDiv.innerHTML = '<div style="font-size:48px; margin-bottom:12px;">💔</div>' +
@@ -1070,6 +1101,7 @@
   function showGoodEnding() {
     playSound('win');
     let phoneFrame = document.getElementById("phone-frame");
+    if (!phoneFrame) return;
     let endDiv = document.createElement("div");
     endDiv.className = "ending-overlay";
     endDiv.innerHTML = '<div style="font-size:48px; margin-bottom:12px;">🎉</div>' +
@@ -1100,7 +1132,6 @@
       return;
     }
 
-    // 只過濾出「今日或以前已到期（dueDay <= state.day）」且未還清的高利貸（今日借款免還，直接可通過）
     let overdueLoans = state.loans.filter(l => state.day >= l.dueDay);
 
     if (overdueLoans.length > 0) {
@@ -1131,14 +1162,13 @@
       }
     }
 
-    // 若無到期債務，重置警告數值並順利進入下一天
     state.loanWarningCount = 0;
 
     let mask = document.getElementById("transition-mask");
     let transText = document.getElementById("transition-text");
     let nextD = state.day + 1;
-    transText.innerText = "☀️ 正在進入第 " + nextD + " 天...";
-    mask.classList.add("active");
+    if (transText) transText.innerText = "☀️ 正在進入第 " + nextD + " 天...";
+    if (mask) mask.classList.add("active");
 
     setTimeout(() => {
       state.day++;
@@ -1174,7 +1204,7 @@
       }
 
       if (state.day > state.maxDays) {
-        mask.classList.remove("active");
+        if (mask) mask.classList.remove("active");
         if (state.loans.length === 0) {
           showGoodEnding();
         } else {
@@ -1185,7 +1215,7 @@
       }
 
       updateUI();
-      setTimeout(() => mask.classList.remove("active"), 400);
+      setTimeout(() => { if (mask) mask.classList.remove("active"); }, 400);
     }, 800);
   }
 
