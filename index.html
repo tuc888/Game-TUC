@@ -15,7 +15,7 @@
     /* 黑色主畫面 */
     .start-title-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 800; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; }
     .start-title-screen h1 { font-size: 32px; color: #fff; margin-bottom: 8px; font-weight: 800; letter-spacing: 2px; text-shadow: 0 0 15px rgba(255,255,255,0.3); }
-    .start-title-screen p { font-size: 12px; color: #666; margin-bottom: 40px; letter-spacing: 1px; }
+    .start-title-screen p { font-size: 12px; color: #666; margin-bottom: 35px; letter-spacing: 1px; }
 
     .home-desktop { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
     .news-banner { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 14px; padding: 10px 12px; font-size: 12px; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s; }
@@ -92,6 +92,8 @@
     <div style="width: 100%; max-width: 240px; display: flex; flex-direction: column; gap: 10px;">
       <button class="ios-btn success" style="margin:0;" onclick="startNewGame()">開始新遊戲</button>
       <button class="ios-btn" style="margin:0; background: #007aff;" id="continue-btn" onclick="continueGame()">繼續遊戲</button>
+      <!-- 主畫面第三個選項：請喝咖啡 -->
+      <button class="ios-btn" style="margin:0; background: #ff9500; color: #fff;" onclick="openDonateLink()">☕ 請喝咖啡</button>
     </div>
   </div>
 
@@ -126,6 +128,11 @@
           <div class="app-icon" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);">📸</div>
           <span class="app-label">IG</span>
         </div>
+        <!-- 黑貓外送 App -->
+        <div class="app-icon-container" onclick="playSound('click'); openApp('foodEats')">
+          <div class="app-icon" style="background: linear-gradient(135deg, #ffcc00, #ff9500);">🛵</div>
+          <span class="app-label">黑貓外送</span>
+        </div>
         <div class="app-icon-container" id="casino-app-icon" style="display:none;" onclick="playSound('click'); openApp('casino')">
           <div class="app-icon" style="background: linear-gradient(135deg, #ff9500, #ff3b30);">🎲</div>
           <span class="app-label">橘哥娛樂城</span>
@@ -149,10 +156,15 @@
 
 <script>
   /*
-   * 博一博的一生（自動存檔無提示版）
+   * 博一博的一生（Portaly 咖啡贊助整合版）
    * © 2026 LIL_TUC888. All Rights Reserved.
    */
   let audioCtxInstance = null;
+
+  function openDonateLink() {
+    playSound('click');
+    window.open('https://portaly.cc/TUC888/support', '_blank');
+  }
 
   function initAudioOnUserGesture() {
     try {
@@ -256,7 +268,7 @@
     updateUI();
   }
 
-  // 繼續遊戲（靜默讀檔）
+  // 繼續遊戲
   function continueGame() {
     playSound('click');
     try {
@@ -493,6 +505,15 @@
         chatItem.onclick = (k => () => { playSound('click'); openChat(k); })(key);
         body.appendChild(chatItem);
       }
+
+    } else if (appId === 'foodEats') {
+      // 黑貓外送 App 介面
+      body.innerHTML = '<div style="background:#1c1c1e; border-radius:14px; padding:16px; border:1px solid #ffcc00; text-align:center;">' +
+                       '<div style="font-size:40px; margin-bottom:8px;">☕🛵</div>' +
+                       '<h2 style="color:#ffcc00; margin:0 0 6px 0; font-size:18px;">贊助一杯咖啡</h2>' +
+                       '<p style="font-size:12px; color:#aaa; line-height:1.5; margin-bottom:16px;">感謝你支持《博一博的一生》獨立開發！點擊下方外送按鈕請作者喝杯咖啡吧！</p>' +
+                       '<button class="ios-btn" style="background:#ff9500; color:#fff; font-weight:bold; font-size:14px;" onclick="openDonateLink()">🛵 立即外送一杯咖啡 (開啟贊助頁面)</button>' +
+                       '</div>';
 
     } else if (appId === 'casino') {
       renderBlackjackApp(body);
@@ -1004,7 +1025,7 @@
   }
 
   function getAppTitle(id) {
-    let map = { futurePay: '💳 未來支付', messages: '💬 Line 訊息', ig: '📸 Instagram', casino: '🎲 橘哥娛樂城', loan: '💰 借貸錢莊' };
+    let map = { futurePay: '💳 未來支付', messages: '💬 Line 訊息', ig: '📸 Instagram', foodEats: '🛵 黑貓外送', casino: '🎲 橘哥娛樂城', loan: '💰 借貸錢莊' };
     return map[id] || 'App';
   }
 
@@ -1382,7 +1403,6 @@
       state.loanVisitCount++;
       state.borrowedPlatforms = [];
 
-      // 靜默跨天自動存檔
       autoSave();
 
       if (state.day === 2) {
