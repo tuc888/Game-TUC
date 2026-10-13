@@ -92,7 +92,6 @@
     <div style="width: 100%; max-width: 240px; display: flex; flex-direction: column; gap: 10px;">
       <button class="ios-btn success" style="margin:0;" onclick="startNewGame()">開始新遊戲</button>
       <button class="ios-btn" style="margin:0; background: #007aff;" id="continue-btn" onclick="continueGame()">繼續遊戲</button>
-      <!-- 主畫面第三個選項：請喝咖啡（觸發宣導彈窗） -->
       <button class="ios-btn" style="margin:0; background: #ff9500; color: #fff;" onclick="showDonateDisclaimerModal()">☕ 請喝咖啡</button>
     </div>
   </div>
@@ -156,12 +155,11 @@
 
 <script>
   /*
-   * 博一博的一生（含贊助宣導二階段確認彈窗）
+   * 博一博的一生（21點勝率與平手機制修正版）
    * © 2026 LIL_TUC888. All Rights Reserved.
    */
   let audioCtxInstance = null;
 
-  // 1. 顯示贊助宣導與免責聲明彈窗
   function showDonateDisclaimerModal() {
     playSound('click');
     let screen = document.getElementById("phone-frame");
@@ -193,14 +191,12 @@
     screen.appendChild(modal);
   }
 
-  // 2. 玩家確認後正式跳轉開啟 Portaly 贊助頁面
   function confirmAndGoDonate() {
     playSound('click');
     closeDonateModal();
     window.open('https://portaly.cc/TUC888/support', '_blank');
   }
 
-  // 3. 關閉彈窗
   function closeDonateModal() {
     let modal = document.getElementById("donate-disclaimer-modal");
     if (modal) modal.remove();
@@ -291,7 +287,6 @@
     }
   }
 
-  // 靜默自動存檔
   function autoSave() {
     try {
       const saveData = { state: state, bjState: bjState };
@@ -299,7 +294,6 @@
     } catch (e) {}
   }
 
-  // 開始新遊戲
   function startNewGame() {
     playSound('click');
     localStorage.removeItem('boyiboyi_auto_save');
@@ -308,7 +302,6 @@
     updateUI();
   }
 
-  // 繼續遊戲
   function continueGame() {
     playSound('click');
     try {
@@ -547,7 +540,6 @@
       }
 
     } else if (appId === 'foodEats') {
-      // 黑貓外送 App 介面
       body.innerHTML = '<div style="background:#1c1c1e; border-radius:14px; padding:16px; border:1px solid #ffcc00; text-align:center;">' +
                        '<div style="font-size:40px; margin-bottom:8px;">☕🛵</div>' +
                        '<h2 style="color:#ffcc00; margin:0 0 6px 0; font-size:18px;">贊助一杯咖啡</h2>' +
@@ -765,7 +757,7 @@
   function drawRiggedCardForPlayer() {
     let card = drawRandomCard();
     if (state.day <= 3) {
-      if (['2', '3', '4', '5', '6', '7'].includes(card.val) && Math.random() < 0.90) {
+      if (['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'].includes(card.val) && Math.random() < 0.95) {
         card = drawRandomCard();
       }
     }
@@ -911,7 +903,7 @@
 
     let winChance = 0.40;
     if (state.day <= 3) {
-      winChance = 0.90;
+      winChance = 0.95; // 前三天 95% 勝率
     }
     if (state.isAllInBet) {
       winChance = 0.05;
@@ -921,14 +913,15 @@
 
     if (pVal > 21) {
       endBlackjackGame('bust');
+    } else if (pVal === dVal) {
+      // 點數相同平手，退回原下注金額
+      endBlackjackGame('push');
     } else if (dVal > 21) {
       endBlackjackGame('win');
-    } else if (isRiggedWin && pVal <= 21 && (pVal >= dVal || dVal > 21)) {
+    } else if (isRiggedWin && pVal <= 21 && pVal > dVal) {
       endBlackjackGame('win');
     } else if (pVal > dVal) {
       endBlackjackGame('win');
-    } else if (pVal === dVal) {
-      endBlackjackGame('push');
     } else {
       endBlackjackGame('lose');
     }
@@ -967,8 +960,8 @@
       playSound('win');
       showDopamineWinPopup(winAmt);
     } else if (result === 'push') {
-      state.cash += bjState.bet;
-      if (statusMsg) { statusMsg.style.color = "#ff9500"; statusMsg.innerText = "⚖️ 平局！退回籌碼 NT$ " + bjState.bet.toLocaleString(); }
+      state.cash += bjState.bet; // 平手退回原下注金額
+      if (statusMsg) { statusMsg.style.color = "#ff9500"; statusMsg.innerText = "⚖️ 平手！退回原下注金額 NT$ " + bjState.bet.toLocaleString(); }
       playSound('click');
     } else if (result === 'bust') {
       if (statusMsg) { statusMsg.style.color = "#ff3b30"; statusMsg.innerText = "💥 爆牌 (Bust)！損失 NT$ " + bjState.bet.toLocaleString(); }
