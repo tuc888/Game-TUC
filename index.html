@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>橘哥娛樂城：15天 iOS 警世模擬器（精細動畫防誤觸版）</title>
+  <title>橘哥娛樂城：15天 iOS 警世模擬器（玩法規則修復版）</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; user-select: none; }
@@ -55,7 +55,6 @@
     .hand-section { background: rgba(0,0,0,0.25); border-radius: 12px; padding: 10px 6px; border: 1px dashed rgba(255,255,255,0.15); display: flex; flex-direction: column; align-items: center; }
     .cards-row { display: flex; justify-content: center; gap: 8px; min-height: 65px; margin: 6px 0; align-items: center; flex-wrap: wrap; width: 100%; }
     
-    /* 動畫速度放慢為 0.6s 順暢滑入 */
     .playing-card { width: 44px; height: 62px; background: #fff; color: #000; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-between; padding: 4px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); animation: cardDealSlow 0.6s cubic-bezier(0.25, 1, 0.5, 1); position: relative; }
     .playing-card.red { color: #d00000; }
     .playing-card.back { background: linear-gradient(135deg, #b71c1c, #880e4f); border: 2px solid #fff; color: transparent; }
@@ -134,7 +133,7 @@
 
 <script>
   /*
-   * 橘哥娛樂城：15天 iOS 警世模擬器（防誤觸與優化點數顯示版）
+   * 橘哥娛樂城：15天 iOS 警世模擬器（玩法規則正確修正版）
    * © 2026 LIL_TUC888. All Rights Reserved.
    */
   let audioCtxInstance = null;
@@ -465,7 +464,6 @@
     let felt = document.createElement("div");
     felt.className = "table-felt";
     
-    // 莊家區域與下方即時點數顯示
     let dealerVal = (bjState.gameStatus === 'playing' || bjState.gameStatus === 'dealing') ? '?' : getHandValue(bjState.dealerHand);
     felt.innerHTML += '<div class="hand-section">' +
                       '<div class="cards-row" id="dealer-cards"></div>' +
@@ -476,7 +474,6 @@
     if (isMaxSpins) statusText = "🌙 時間太晚囉！請明天繼續賺大錢！";
     felt.innerHTML += '<div id="bj-status-msg" style="font-weight:bold; font-size:13px; min-height:22px; color:#ffd700;">' + statusText + '</div>';
 
-    // 玩家區域與下方即時點數顯示
     let playerVal = getHandValue(bjState.playerHand);
     felt.innerHTML += '<div class="hand-section">' +
                       '<div class="cards-row" id="player-cards"></div>' +
@@ -587,7 +584,6 @@
     renderCards();
   }
 
-  // 判斷遊戲是否正在進行（發牌中/莊家補牌中）防重複點擊
   function isBusy() {
     return bjState.gameStatus === 'dealing' || bjState.gameStatus === 'dealer_turn';
   }
@@ -644,7 +640,18 @@
     return val;
   }
 
-  // 開始 21 點遊戲（放慢為 500ms 動畫發牌：玩家1 -> 莊家1 -> 玩家2 -> 莊家2(暗牌)）
+  // 依日數調控機率抽牌（甜頭期讓玩家容易抽到好牌，後續讓莊家容易拿到大牌）
+  function drawRiggedCardForPlayer() {
+    let card = drawRandomCard();
+    if (state.day === 2 || state.day === 3) {
+      // 甜頭期：若抽到小牌，高機率重新抽一張大牌 (10, J, Q, K, A)
+      if (['2', '3', '4', '5', '6', '7'].includes(card.val) && Math.random() < 0.85) {
+        card = drawRandomCard();
+      }
+    }
+    return card;
+  }
+
   function startBlackjackGame(amount) {
     if (state.spinsToday >= 30) return;
     if (state.cash < amount) {
@@ -661,12 +668,11 @@
     let appBody = document.querySelector(".app-body");
     if (appBody) renderBlackjackApp(appBody);
 
-    let pCard1 = drawRandomCard();
+    let pCard1 = drawRiggedCardForPlayer();
     let dCard1 = drawRandomCard();
-    let pCard2 = drawRandomCard();
+    let pCard2 = drawRiggedCardForPlayer();
     let dCard2 = drawRandomCard();
 
-    // 放慢發牌節奏 (每隔 500ms 一張牌)
     setTimeout(() => { playSound('card'); bjState.playerHand.push(pCard1); renderCards(); updateHandValueText(); }, 300);
     setTimeout(() => { playSound('card'); bjState.dealerHand.push(dCard1); renderCards(); updateHandValueText(); }, 800);
     setTimeout(() => { playSound('card'); bjState.playerHand.push(pCard2); renderCards(); updateHandValueText(); }, 1300);
@@ -685,7 +691,6 @@
     }, 1800);
   }
 
-  // 即時更新牌組正下方的點數顯示
   function updateHandValueText() {
     let pVal = getHandValue(bjState.playerHand);
     let dVal = (bjState.gameStatus === 'playing' || bjState.gameStatus === 'dealing') ? '?' : getHandValue(bjState.dealerHand);
@@ -695,10 +700,9 @@
     if (pEl) pEl.innerText = '👤 玩家點數：' + pVal + ' 點';
   }
 
-  // 玩家補牌 (Hit)
   function playerHit() {
     playSound('card');
-    bjState.playerHand.push(drawRandomCard());
+    bjState.playerHand.push(drawRiggedCardForPlayer());
     renderCards();
     updateHandValueText();
 
@@ -708,13 +712,12 @@
     }
   }
 
-  // 玩家雙倍 (Double)
   function playerDouble() {
     if (state.cash < bjState.bet) return;
     playSound('card');
     state.cash -= bjState.bet;
     bjState.bet *= 2;
-    bjState.playerHand.push(drawRandomCard());
+    bjState.playerHand.push(drawRiggedCardForPlayer());
     renderCards();
     updateHandValueText();
 
@@ -726,18 +729,15 @@
     }
   }
 
-  // 玩家停牌 (Stand) -> 進入莊家發牌動態流程 (放慢節奏)
   function playerStand() {
     bjState.gameStatus = 'dealer_turn';
     let appBody = document.querySelector(".app-body");
     if (appBody) renderBlackjackApp(appBody);
 
-    // 莊家掀開暗牌
     playSound('card');
     renderCards();
     updateHandValueText();
 
-    // 莊家補牌間隔 800ms，展現穩定的動畫節奏
     let dealerInterval = setInterval(() => {
       if (getHandValue(bjState.dealerHand) < 17) {
         playSound('card');
@@ -751,33 +751,21 @@
     }, 800);
   }
 
+  // 正確的 21 點勝負邏輯判定（嚴格遵循點數比大小原則）
   function evaluateFinalHand() {
     let pVal = getHandValue(bjState.playerHand);
     let dVal = getHandValue(bjState.dealerHand);
 
-    let winProb = 0.5;
-    if (state.day === 2 || state.day === 3) {
-      winProb = 0.98;
-    } else if (state.day <= 3) {
-      if (bjState.bet <= 1000) winProb = 0.90;
-      else if (bjState.bet <= 5000) winProb = 0.70;
-    } else {
-      if (bjState.bet <= 1000) winProb = 0.70;
-      else if (bjState.bet <= 5000) winProb = 0.40;
-      else if (bjState.bet <= 10000) winProb = 0.30;
-      else winProb = 0.10;
-    }
-
-    let isRiggedWin = Math.random() < winProb;
-
-    if (dVal > 21) {
-      endBlackjackGame('win');
-    } else if (isRiggedWin || pVal > dVal) {
-      endBlackjackGame('win');
+    if (pVal > 21) {
+      endBlackjackGame('bust');
+    } else if (dVal > 21) {
+      endBlackjackGame('win'); // 莊家爆牌，玩家贏
+    } else if (pVal > dVal) {
+      endBlackjackGame('win'); // 玩家點數大，玩家贏
     } else if (pVal === dVal) {
-      endBlackjackGame('push');
+      endBlackjackGame('push'); // 點數相同，平局退回籌碼
     } else {
-      endBlackjackGame('lose');
+      endBlackjackGame('lose'); // 莊家點數大 (例如 19 比 15)，莊家贏
     }
   }
 
@@ -821,7 +809,7 @@
       if (statusMsg) { statusMsg.style.color = "#ff3b30"; statusMsg.innerText = "💥 爆牌 (Bust)！損失 NT$ " + bjState.bet.toLocaleString(); }
       playSound('lose');
     } else {
-      if (statusMsg) { statusMsg.style.color = "#ff3b30"; statusMsg.innerText = "😢 莊家贏！損失 NT$ " + bjState.bet.toLocaleString(); }
+      if (statusMsg) { statusMsg.style.color = "#ff3b30"; statusMsg.innerText = "😢 莊家點數較大！損失 NT$ " + bjState.bet.toLocaleString(); }
       playSound('lose');
     }
 
