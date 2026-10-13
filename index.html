@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>橘哥娛樂城：15天 iOS 警世模擬器（雲端模擬+存檔功能版）</title>
+  <title>博一博的一生</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; user-select: none; }
@@ -11,6 +11,12 @@
     .ios-status-bar { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 24px; font-size: 14px; font-weight: 600; color: #fff; background: transparent; z-index: 100; flex-shrink: 0; }
     .dynamic-island { width: 120px; height: 28px; background: #000; border-radius: 14px; position: absolute; left: 50%; transform: translateX(-50%); top: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #00ffcc; font-weight: bold; }
     .iphone-screen { flex: 1; background: linear-gradient(135deg, #1c2a38, #0f0f11); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    
+    /* 黑色主畫面 */
+    .start-title-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 800; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; text-align: center; }
+    .start-title-screen h1 { font-size: 32px; color: #fff; margin-bottom: 8px; font-weight: 800; letter-spacing: 2px; text-shadow: 0 0 15px rgba(255,255,255,0.3); }
+    .start-title-screen p { font-size: 12px; color: #666; margin-bottom: 40px; letter-spacing: 1px; }
+
     .home-desktop { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
     .news-banner { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 14px; padding: 10px 12px; font-size: 12px; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s; }
     .news-banner:active { transform: scale(0.97); }
@@ -49,7 +55,7 @@
     .ios-btn:active { opacity: 0.8; transform: scale(0.98); }
     .ios-btn.danger { background: #ff3b30; }
     .ios-btn.success { background: #34c759; }
-    .ios-btn:disabled { background: #444; color: #888; cursor: not-allowed; opacity: 0.5; }
+    .ios-btn:disabled { background: #3a3a3c; color: #666; cursor: not-allowed; opacity: 0.5; }
 
     .table-felt { background: #0b5345; border-radius: 18px; padding: 16px 12px; border: 3px solid #145a32; margin: 8px 0; box-shadow: inset 0 0 15px #000; text-align: center; position: relative; display: flex; flex-direction: column; gap: 14px; }
     .hand-section { background: rgba(0,0,0,0.25); border-radius: 12px; padding: 10px 6px; border: 1px dashed rgba(255,255,255,0.15); display: flex; flex-direction: column; align-items: center; }
@@ -79,6 +85,16 @@
 <body onclick="initAudioOnUserGesture()">
 
 <div class="iphone-frame" id="phone-frame">
+  <!-- 黑色主畫面 -->
+  <div class="start-title-screen" id="title-screen">
+    <h1>博一博的一生</h1>
+    <p>—— 警世人生模擬器 ——</p>
+    <div style="width: 100%; max-width: 240px; display: flex; flex-direction: column; gap: 10px;">
+      <button class="ios-btn success" style="margin:0;" onclick="startNewGame()">開始新遊戲</button>
+      <button class="ios-btn" style="margin:0; background: #007aff;" id="continue-btn" onclick="continueGame()">繼續遊戲</button>
+    </div>
+  </div>
+
   <div class="day-transition-mask" id="transition-mask">
     <h2 id="transition-text" style="color:#00ffcc; font-size:24px; margin:0;">☀️ 正在進入第 2 天...</h2>
   </div>
@@ -124,12 +140,6 @@
         <h3 id="story-title" style="margin:0 0 4px 0; color:#00ffcc; font-size:15px;">第 1 天</h3>
         <div id="day-task-status" style="font-size:11px; color:#ff9500; margin-bottom:6px; line-height:1.3;">📌 待辦事項：處理今日帳單開銷。</div>
         <button class="ios-btn success" onclick="playSound('click'); nextDay()">結束今天，進入明天</button>
-        
-        <!-- 存檔與讀檔按鈕 -->
-        <div style="display:flex; gap:6px; margin-top:6px;">
-          <button class="ios-btn" style="background:#5856d6; font-size:11px; padding:8px; margin:0;" onclick="saveGame()">💾 手動存檔</button>
-          <button class="ios-btn" style="background:#ff9500; font-size:11px; padding:8px; margin:0;" onclick="loadGame()">📂 讀取存檔</button>
-        </div>
       </div>
       
       <div class="app-watermark">© 2026 LIL_TUC888. All Rights Reserved. 版權所有，禁止未經授權之轉載或商業使用。</div>
@@ -139,7 +149,7 @@
 
 <script>
   /*
-   * 橘哥娛樂城：15天 iOS 警世模擬器（含存檔與讀檔功能版）
+   * 博一博的一生（自動存檔無提示版）
    * © 2026 LIL_TUC888. All Rights Reserved.
    */
   let audioCtxInstance = null;
@@ -229,45 +239,53 @@
     }
   }
 
-  // 存檔功能實作
-  function saveGame() {
+  // 靜默自動存檔
+  function autoSave() {
     try {
-      const saveData = {
-        state: state,
-        bjState: bjState
-      };
-      localStorage.setItem('orange_casino_save_data', JSON.stringify(saveData));
-      playSound('success-pay');
-      alert('💾 遊戲進度已成功儲存至本機！');
-    } catch (e) {
-      alert('❌ 存檔失敗！');
-    }
+      const saveData = { state: state, bjState: bjState };
+      localStorage.setItem('boyiboyi_auto_save', JSON.stringify(saveData));
+    } catch (e) {}
   }
 
-  function loadGame() {
+  // 開始新遊戲
+  function startNewGame() {
+    playSound('click');
+    localStorage.removeItem('boyiboyi_auto_save');
+    document.getElementById("title-screen").style.display = "none";
+    autoSave();
+    updateUI();
+  }
+
+  // 繼續遊戲（靜默讀檔）
+  function continueGame() {
+    playSound('click');
     try {
-      const saved = localStorage.getItem('orange_casino_save_data');
-      if (!saved) {
-        alert('⚠️ 找不到任何存檔紀錄！');
-        return;
+      const saved = localStorage.getItem('boyiboyi_auto_save');
+      if (saved) {
+        const saveData = JSON.parse(saved);
+        state = saveData.state;
+        bjState = saveData.bjState;
+
+        let casinoIcon = document.getElementById("casino-app-icon");
+        if (casinoIcon) casinoIcon.style.display = state.casinoInstalled ? "flex" : "none";
+
+        let loanIcon = document.getElementById("loan-app-icon");
+        if (loanIcon) loanIcon.style.display = state.loanInstalled ? "flex" : "none";
+
+        updateUI();
       }
-      const saveData = JSON.parse(saved);
-      state = saveData.state;
-      bjState = saveData.bjState;
+    } catch (e) {}
+    document.getElementById("title-screen").style.display = "none";
+  }
 
-      // 還原桌面 App 圖示顯示狀態
-      let casinoIcon = document.getElementById("casino-app-icon");
-      if (casinoIcon) casinoIcon.style.display = state.casinoInstalled ? "flex" : "none";
-
-      let loanIcon = document.getElementById("loan-app-icon");
-      if (loanIcon) loanIcon.style.display = state.loanInstalled ? "flex" : "none";
-
-      updateUI();
-      closeApp();
-      playSound('win');
-      alert('📂 存檔讀取成功！歡迎回到第 ' + state.day + ' 天。');
-    } catch (e) {
-      alert('❌ 讀檔失敗，存檔資料可能已損壞。');
+  function checkSaveExists() {
+    const btn = document.getElementById("continue-btn");
+    if (!btn) return;
+    const saved = localStorage.getItem('boyiboyi_auto_save');
+    if (saved) {
+      btn.disabled = false;
+    } else {
+      btn.disabled = true;
     }
   }
 
@@ -276,7 +294,7 @@
     2: { bill: { name: "水電與瓦斯基本費", amount: 2500 }, wife: "老公，阿偉好像一直傳訊息給你，你們最近在聊什麼投資啊？感覺怪怪的。", child: "爸爸，學校老師說要繳班費 500 元喔！" },
     3: { bill: { name: "小孩幼兒園才藝班學費", amount: 8000 }, wife: "才藝班學費帳單來了，這幾天開銷好大，你薪水夠用嗎？", child: "爸爸陪我玩積木！" },
     4: { bill: { name: "本月房屋租金與水電費", amount: 20000 }, wife: "房東剛剛狂打電話催房租 2 萬了！你帳戶到底還有沒有錢啊？", child: "爸爸肚子餓..." },
-    5: { bill: { name: "機車定期保養與油錢", amount: 2000 }, wife: "老公,我看你最近一直滑手機按那個娛樂城，拜託你穩一點，別走歪路。", child: "爸爸今天可以帶我去公園溜滑梯嗎？" },
+    5: { bill: { name: "機車定期保養與油錢", amount: 2000 }, wife: "老公，我看你最近一直滑手機按那個娛樂城，拜託你穩一點，別走歪路。", child: "爸爸今天可以帶我去公園溜滑梯嗎？" },
     6: { bill: { name: "父母親慢性病藥品與保健費", amount: 6000 }, wife: "媽的慢性病藥吃完了，拿藥要 6 千塊，你等等轉給我。", child: "爸爸，我的色鉛筆用完了啦。" },
     7: { bill: { name: "全家生活雜貨與採買", amount: 4500 }, wife: "冰箱空了，我帶小孩去全聯買菜，花了一點錢，你下班順便洗碗喔。", child: "爸爸我今天考試拿 100 分喔！" },
     8: { bill: { name: "全家醫療與機車強制險", amount: 5000 }, wife: "保險費扣款日到了，戶頭差點餘額不足，你皮繃緊一點。", child: "爸爸我想喝麥香奶茶～" },
@@ -900,6 +918,7 @@
     }
 
     state.isAllInBet = false;
+    autoSave();
     updateUI();
 
     let appBody = document.querySelector(".app-body");
@@ -914,6 +933,7 @@
           isLoanLink: true
         });
         triggerNotification("好友阿偉", "點擊下方安裝檔安裝『借貸錢莊 App』...", "friend");
+        autoSave();
         updateUI();
       }, 600);
     }
@@ -957,6 +977,7 @@
       playSound('click');
       state.loanBatchIndex++;
       state.loanVisitCount++;
+      autoSave();
       renderLoanApp(bodyContainer);
       alert("🔄 已刷新更高等級店家！可借額度提升至最高百萬等級！");
     };
@@ -995,6 +1016,7 @@
   function openChat(contactKey) {
     let c = state.contacts[contactKey];
     c.unread = 0;
+    autoSave();
     updateUI();
 
     let screen = document.getElementById("phone-screen");
@@ -1060,6 +1082,7 @@
     state.contacts.wife.messages.push({ sender: 'user', text: "老婆...對不起，我這幾天偷用了娛樂城 App 玩賭博..." });
     state.contacts.wife.messages.push({ sender: 'wife', text: "老公...謝謝你願意對我誠實。只要你現在願意立刻收手，刪掉 APP，我們一家人平平安安在一起，沒有什麼困難是過不去的！❤️" });
     
+    autoSave();
     closeApp();
     openChat('wife');
 
@@ -1104,6 +1127,8 @@
     state.currentBill.paid = true;
     playSound('success-pay');
 
+    autoSave();
+
     let popup = document.createElement("div");
     popup.className = "success-popup";
     popup.innerHTML = '<div style="font-size:36px; margin-bottom:8px;">🎉</div>' +
@@ -1137,6 +1162,8 @@
     state.loanWarningCount = 0;
     playSound('success-pay');
 
+    autoSave();
+
     let popup = document.createElement("div");
     popup.className = "success-popup";
     popup.innerHTML = '<div style="font-size:36px; margin-bottom:8px;">🎉</div>' +
@@ -1156,6 +1183,7 @@
     state.casinoInstalled = true;
     let icon = document.getElementById("casino-app-icon");
     if (icon) icon.style.display = "flex";
+    autoSave();
     closeApp();
     updateUI();
   }
@@ -1167,6 +1195,7 @@
     state.loanInstalled = true;
     let icon = document.getElementById("loan-app-icon");
     if (icon) icon.style.display = "flex";
+    autoSave();
     closeApp();
     updateUI();
   }
@@ -1229,6 +1258,8 @@
             messages: [{ sender: colKey, text: "本利和 NT$ " + totalRepay.toLocaleString() + "，於明日第 " + dueDay + " 天到期清償！" }]
           };
           triggerNotification(name + " 催收", "本利和 NT$ " + totalRepay.toLocaleString() + " 須於明日第 " + dueDay + " 天清償！", colKey);
+          
+          autoSave();
           closeApp();
           updateUI();
         }, 1000);
@@ -1238,6 +1269,7 @@
 
   function showRedemptionEnding() {
     playSound('win');
+    localStorage.removeItem('boyiboyi_auto_save');
     let phoneFrame = document.getElementById("phone-frame");
     if (!phoneFrame) return;
     let endDiv = document.createElement("div");
@@ -1255,6 +1287,7 @@
 
   function showBadEnding(totalDebt) {
     playSound('lose');
+    localStorage.removeItem('boyiboyi_auto_save');
     let phoneFrame = document.getElementById("phone-frame");
     if (!phoneFrame) return;
     let endDiv = document.createElement("div");
@@ -1272,6 +1305,7 @@
 
   function showGoodEnding() {
     playSound('win');
+    localStorage.removeItem('boyiboyi_auto_save');
     let phoneFrame = document.getElementById("phone-frame");
     if (!phoneFrame) return;
     let endDiv = document.createElement("div");
@@ -1340,7 +1374,7 @@
     let transText = document.getElementById("transition-text");
     let nextD = state.day + 1;
     if (transText) transText.innerText = "☀️ 正在進入第 " + nextD + " 天...";
-    if (mask) mask.classList.add("action") || mask.classList.add("active");
+    if (mask) mask.classList.add("active");
 
     setTimeout(() => {
       state.day++;
@@ -1348,8 +1382,8 @@
       state.loanVisitCount++;
       state.borrowedPlatforms = [];
 
-      // 跨天成功時自動儲存遊戲進度
-      saveGame();
+      // 靜默跨天自動存檔
+      autoSave();
 
       if (state.day === 2) {
         state.contacts.friend.unread++;
@@ -1394,7 +1428,8 @@
     }, 800);
   }
 
-  updateUI();
+  // 初始化時檢查是否有存檔
+  checkSaveExists();
 </script>
 
 </body>
