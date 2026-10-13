@@ -38,7 +38,7 @@
     .dopamine-win-popup { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.88); border: 3px solid #34c759; border-radius: 24px; padding: 20px 30px; text-align: center; z-index: 550; box-shadow: 0 0 35px #34c759; animation: dopaminePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
     @keyframes dopaminePop { 0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.15); } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
-    .face-verify-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 400; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; animation: fadeIn 0.3s ease-out; }
+    .face-verify-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 900; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; animation: fadeIn 0.3s ease-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .day-transition-mask { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 600; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
@@ -92,8 +92,8 @@
     <div style="width: 100%; max-width: 240px; display: flex; flex-direction: column; gap: 10px;">
       <button class="ios-btn success" style="margin:0;" onclick="startNewGame()">開始新遊戲</button>
       <button class="ios-btn" style="margin:0; background: #007aff;" id="continue-btn" onclick="continueGame()">繼續遊戲</button>
-      <!-- 主畫面第三個選項：請喝咖啡 -->
-      <button class="ios-btn" style="margin:0; background: #ff9500; color: #fff;" onclick="openDonateLink()">☕ 請喝咖啡</button>
+      <!-- 主畫面第三個選項：請喝咖啡（觸發宣導彈窗） -->
+      <button class="ios-btn" style="margin:0; background: #ff9500; color: #fff;" onclick="showDonateDisclaimerModal()">☕ 請喝咖啡</button>
     </div>
   </div>
 
@@ -156,14 +156,54 @@
 
 <script>
   /*
-   * 博一博的一生（Portaly 咖啡贊助整合版）
+   * 博一博的一生（含贊助宣導二階段確認彈窗）
    * © 2026 LIL_TUC888. All Rights Reserved.
    */
   let audioCtxInstance = null;
 
-  function openDonateLink() {
+  // 1. 顯示贊助宣導與免責聲明彈窗
+  function showDonateDisclaimerModal() {
     playSound('click');
+    let screen = document.getElementById("phone-frame");
+    if (!screen) return;
+
+    let existingModal = document.getElementById("donate-disclaimer-modal");
+    if (existingModal) existingModal.remove();
+
+    let modal = document.createElement("div");
+    modal.id = "donate-disclaimer-modal";
+    modal.className = "face-verify-modal";
+    modal.style.cssText = "z-index: 999; background: rgba(0,0,0,0.95); padding: 20px;";
+
+    modal.innerHTML = 
+      '<div style="font-size: 38px; margin-bottom: 6px;">☕</div>' +
+      '<h3 style="color: #ff9500; font-size: 18px; margin: 0 0 10px 0;">贊助與支持注意事項</h3>' +
+      '<div style="text-align: left; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 12px; font-size: 11px; color: #ddd; line-height: 1.6; margin-bottom: 16px; max-height: 280px; overflow-y: auto;">' +
+        '<p style="margin: 0 0 6px 0; font-weight: bold; color: #fff;">感謝您對《博一博的一生》開發者的支持！贊助前請確認以下事項：</p>' +
+        '1. <b>純屬自願贊助</b>：本贊助為個人自願無對價支持，不包含任何實體或虛擬商品。<br>' +
+        '2. <b>不影響遊戲數值</b>：贊助<b>完全不會</b>增加遊戲內的金錢、籌碼，亦不提供任何遊戲特權。<br>' +
+        '3. <b>不接受退費請求</b>：款項一經支付即為贈與，恕不接受任何理由之退款或撤銷。<br>' +
+        '4. <b>虛擬警世模擬</b>：遊戲內所有資金數值皆為模擬，無實質金融價值。' +
+      '</div>' +
+      '<div style="width: 100%; display: flex; flex-direction: column; gap: 8px;">' +
+        '<button class="ios-btn success" style="margin: 0; font-size: 13px; font-weight: bold;" onclick="confirmAndGoDonate()">✅ 我已瞭解，確認並前往贊助</button>' +
+        '<button class="ios-btn danger" style="margin: 0; font-size: 13px;" onclick="closeDonateModal()">❌ 取消</button>' +
+      '</div>';
+
+    screen.appendChild(modal);
+  }
+
+  // 2. 玩家確認後正式跳轉開啟 Portaly 贊助頁面
+  function confirmAndGoDonate() {
+    playSound('click');
+    closeDonateModal();
     window.open('https://portaly.cc/TUC888/support', '_blank');
+  }
+
+  // 3. 關閉彈窗
+  function closeDonateModal() {
+    let modal = document.getElementById("donate-disclaimer-modal");
+    if (modal) modal.remove();
   }
 
   function initAudioOnUserGesture() {
@@ -512,7 +552,7 @@
                        '<div style="font-size:40px; margin-bottom:8px;">☕🛵</div>' +
                        '<h2 style="color:#ffcc00; margin:0 0 6px 0; font-size:18px;">贊助一杯咖啡</h2>' +
                        '<p style="font-size:12px; color:#aaa; line-height:1.5; margin-bottom:16px;">感謝你支持《博一博的一生》獨立開發！點擊下方外送按鈕請作者喝杯咖啡吧！</p>' +
-                       '<button class="ios-btn" style="background:#ff9500; color:#fff; font-weight:bold; font-size:14px;" onclick="openDonateLink()">🛵 立即外送一杯咖啡 (開啟贊助頁面)</button>' +
+                       '<button class="ios-btn" style="background:#ff9500; color:#fff; font-weight:bold; font-size:14px;" onclick="showDonateDisclaimerModal()">🛵 立即外送一杯咖啡 (開啟贊助頁面)</button>' +
                        '</div>';
 
     } else if (appId === 'casino') {
@@ -523,7 +563,7 @@
       body.innerHTML = '<div style="background:#1a1a1a; padding:12px; border-radius:12px;">' +
                        '<b>👑 官方社群 @boss_orange</b>' +
                        '<div style="font-size:32px; text-align:center; margin:16px 0;">🏎️💸</div>' +
-                       '<p style="font-size:11px; color:#ddd;">跟著橘哥團隊玩21點，不到三天把車貸房貸全清光！想翻身立刻私訊我！</p></div>';
+                       '<p style="font-size:11px; color:#ddd;">跟著橘哥團隊玩21點，不到三天把車貸房貸全清光！想翻身聯絡我！</p></div>';
     }
 
     screen.appendChild(view);
